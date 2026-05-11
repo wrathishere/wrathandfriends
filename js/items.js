@@ -1,7 +1,7 @@
 // ============================================================
 //  items.js — Loads shop items from Google Sheets
 //  Sheet ID: 1LYE8aTssm-Zvp5UAoezqhP74DwpHn5nBXJpK1KjHDVU
-//  Columns: name, price, category, rarity, image
+//  Columns: name, price, category, level, image
 // ============================================================
 
 const SHEET_ID  = "1LYE8aTssm-Zvp5UAoezqhP74DwpHn5nBXJpK1KjHDVU";
@@ -14,7 +14,6 @@ async function loadItemsFromSheet() {
     const response = await fetch(SHEET_URL);
     const text     = await response.text();
 
-    // Google wraps the response in a JS callback — strip it
     const json = JSON.parse(text.substring(47, text.length - 2));
     const rows = json.table.rows;
 
@@ -25,7 +24,6 @@ async function loadItemsFromSheet() {
           row.c[i] && row.c[i].v !== null ? String(row.c[i].v).trim() : "";
 
         const category = get(2).toLowerCase() || "misc";
-        const rarity   = get(3).toLowerCase()  || "common";
         const imageVal = get(4);
 
         const categoryEmojis = {
@@ -41,7 +39,7 @@ async function loadItemsFromSheet() {
           name:     get(0),
           price:    parseFloat(get(1)) || 0,
           category,
-          rarity,
+          level:    get(3) || "1",
           emoji:    categoryEmojis[category] || "🎁",
           image:    imageVal ? `images/${imageVal}` : null,
         };
