@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚔️ The Arcane Emporium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Ambient background particles -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="ember" style="--d:2s;--x:10%;--s:0.4"></div>
+    <div class="ember" style="--d:3.5s;--x:25%;--s:0.6"></div>
+    <div class="ember" style="--d:2.8s;--x:40%;--s:0.3"></div>
+    <div class="ember" style="--d:4s;--x:55%;--s:0.7"></div>
+    <div class="ember" style="--d:1.9s;--x:70%;--s:0.5"></div>
+    <div class="ember" style="--d:3.2s;--x:85%;--s:0.4"></div>
+    <div class="ember" style="--d:2.5s;--x:92%;--s:0.6"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="shop-brand">
+        <span class="brand-icon">⚗️</span>
+        <div>
+          <h1 class="shop-title">The Arcane Emporium</h1>
+          <p class="shop-tagline">Rare wares for the worthy adventurer</p>
+        </div>
+      </div>
+      <div class="header-gold">
+        <span class="gold-icon">🪙</span>
+        <span id="gold-display">1,500 Gold</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search & Filter Bar -->
+  <nav class="filter-bar" role="navigation" aria-label="Shop filters">
+    <div class="filter-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Search items…"
+          aria-label="Search items"
+        />
+      </div>
+      <div class="category-pills" role="group" aria-label="Filter by category">
+        <button class="pill active" data-category="all">All Items</button>
+        <button class="pill" data-category="weapon">⚔️ Weapons</button>
+        <button class="pill" data-category="armor">🛡️ Armor</button>
+        <button class="pill" data-category="potion">🧪 Potions</button>
+        <button class="pill" data-category="accessory">💍 Accessories</button>
+        <button class="pill" data-category="scroll">📜 Scrolls</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Results count -->
+  <div class="results-info" aria-live="polite">
+    <span id="item-count">12 items</span> available in the shop
+  </div>
+
+  <!-- Item Grid -->
+  <main class="shop-grid" id="shop-grid" aria-label="Shop items">
+    <!-- Cards injected by JS -->
+  </main>
+
+  <!-- Empty state -->
+  <div class="empty-state hidden" id="empty-state" aria-hidden="true">
+    <span class="empty-icon">🗺️</span>
+    <p>No items found. Try a different search or category.</p>
+  </div>
+
+  <!-- Item Detail Modal -->
+  <div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" aria-label="Close item detail">✕</button>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <script src="js/items.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>
