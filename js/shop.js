@@ -8,14 +8,12 @@
   // ── State ──────────────────────────────────────────────
   let activeCategory = "all";
   let searchQuery = "";
-  let playerGold = 1500;
 
   // ── DOM refs ───────────────────────────────────────────
   const grid = document.getElementById("shop-grid");
   const emptyState = document.getElementById("empty-state");
   const itemCount = document.getElementById("item-count");
   const searchInput = document.getElementById("search-input");
-  const goldDisplay = document.getElementById("gold-display");
   const modalBackdrop = document.getElementById("modal-backdrop");
   const modalContent = document.getElementById("modal-content");
   const modalClose = document.getElementById("modal-close");
@@ -60,7 +58,6 @@
   // ── Card HTML ──────────────────────────────────────────
   function buildCard(item) {
     const r = RARITY[item.rarity] ?? RARITY.common;
-    const canAfford = playerGold >= item.price;
 
     return `
       <article
@@ -78,17 +75,7 @@
         <h2 class="card-name">${item.name}</h2>
         <p class="card-desc">${item.description.length > 90 ? item.description.slice(0, 90) + "…" : item.description}</p>
         <div class="card-footer">
-          <span class="card-price ${canAfford ? "" : "too-expensive"}">
-            🪙 ${item.price.toLocaleString()}
-          </span>
-          <button
-            class="buy-btn ${canAfford ? "" : "disabled"}"
-            data-id="${item.id}"
-            aria-label="Buy ${item.name} for ${item.price} gold"
-            ${canAfford ? "" : "aria-disabled='true'"}
-          >
-            ${canAfford ? "Buy" : "Too costly"}
-          </button>
+          <span class="card-price">💰 ${item.price.toLocaleString()}</span>
         </div>
       </article>`;
   }
@@ -144,24 +131,11 @@
     });
   }
 
-  // ── Buy item ───────────────────────────────────────────
-  function buyItem(id) {
-    const item = ITEMS.find((i) => i.id === id);
-    if (!item || playerGold < item.price) return;
-
-    playerGold -= item.price;
-    goldDisplay.textContent = formatGold(playerGold);
-
-    showToast(`✅ Purchased ${item.emoji} ${item.name}!`);
-    render();
-  }
-
   // ── Modal ──────────────────────────────────────────────
   function openModal(id) {
     const item = ITEMS.find((i) => i.id === id);
     if (!item) return;
     const r = RARITY[item.rarity] ?? RARITY.common;
-    const canAfford = playerGold >= item.price;
 
     const statsHtml = Object.entries(item.stats ?? {})
       .map(([key, val]) => {
@@ -188,14 +162,9 @@
       <p class="modal-desc">${item.description}</p>
       ${item.flavor ? `<blockquote class="modal-flavor">${item.flavor}</blockquote>` : ""}
       <div class="modal-stats">${statsHtml}</div>
-      <div class="modal-actions">
-        <span class="modal-price ${canAfford ? "" : "too-expensive"}">🪙 ${item.price.toLocaleString()} Gold</span>
-        <button
-          class="modal-buy-btn ${canAfford ? "" : "disabled"}"
-          data-id="${item.id}"
-          ${canAfford ? "" : "disabled"}
-        >${canAfford ? "⚔️ Purchase Item" : "Not enough gold"}</button>
-      </div>
+     <div class="modal-actions">
+  <span class="modal-price">💰 ${item.price.toLocaleString()} Gold</span>
+</div>
     `;
 
     const buyBtn = modalContent.querySelector(".modal-buy-btn:not(.disabled)");
