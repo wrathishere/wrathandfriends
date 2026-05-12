@@ -1,9 +1,0 @@
-{
-  "name": "Example Sword",
-  "price": 150,
-  "category": "weapon",
-  "level": 1,
-  "sale": false,
-  "image": "",
-  "description": "A basic starter sword. Replace this with your real items!"
-}
