@@ -7,53 +7,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:        #f5efe4;
-      --bg-card:   #fffdf7;
-      --border:    rgba(180,140,80,0.22);
-      --gold:      #b07d2e;
-      --gold-lt:   #c99038;
-      --gold-dim:  #d4ab6a;
-      --text:      #2c2018;
-      --muted:     #7a6040;
-      --dim:       #b09870;
-      --red:       #c0392b;
-      --green:     #27ae60;
-      --shadow:    rgba(100,70,20,0.12);
-      --radius:    10px;
-      --font:      'Plus Jakarta Sans', sans-serif;
-      --font-d:    'Playfair Display', serif;
+      --bg:       #f5efe4;
+      --bg-card:  #fffdf7;
+      --border:   rgba(180,140,80,0.22);
+      --gold:     #b07d2e;
+      --gold-lt:  #c99038;
+      --gold-dim: #d4ab6a;
+      --text:     #2c2018;
+      --muted:    #7a6040;
+      --dim:      #b09870;
+      --red:      #c0392b;
+      --red-lt:   #e74c3c;
+      --green:    #27ae60;
+      --shadow:   rgba(100,70,20,0.12);
+      --radius:   10px;
+      --font:     'Plus Jakarta Sans', sans-serif;
+      --font-d:   'Playfair Display', serif;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ── Login Screen ── */
-    #login-screen {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-      background: var(--bg);
-    }
+    /* ── Login ── */
+    #login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; }
     .login-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2.5rem 2rem;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem 2rem;
       width: 100%; max-width: 380px;
       box-shadow: 0 8px 40px var(--shadow);
       display: flex; flex-direction: column; gap: 1.25rem;
     }
-    .login-title {
-      font-family: var(--font-d);
-      font-size: 1.6rem;
-      color: var(--gold);
-      text-align: center;
-    }
+    .login-title { font-family: var(--font-d); font-size: 1.6rem; color: var(--gold); text-align: center; }
     .login-sub { font-size: 0.82rem; color: var(--muted); text-align: center; }
     .login-box input {
       width: 100%; padding: 0.65rem 0.9rem;
       border: 1px solid var(--border); border-radius: var(--radius);
       font-family: var(--font); font-size: 0.9rem; color: var(--text);
-      background: var(--bg); outline: none;
-      transition: border-color 0.2s;
+      background: var(--bg); outline: none; transition: border-color 0.2s;
     }
     .login-box input:focus { border-color: var(--gold-dim); }
     .login-btn {
@@ -63,101 +52,93 @@
       cursor: pointer; transition: background 0.2s;
     }
     .login-btn:hover { background: var(--gold-lt); }
-    .login-error {
-      color: var(--red); font-size: 0.8rem; text-align: center;
-      display: none;
-    }
+    .login-error { color: var(--red); font-size: 0.8rem; text-align: center; display: none; }
 
-    /* ── Admin App ── */
+    /* ── App ── */
     #admin-app { display: none; }
 
     .top-bar {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 0.9rem 2rem;
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
       gap: 1rem; flex-wrap: wrap;
       position: sticky; top: 0; z-index: 50;
       box-shadow: 0 2px 12px var(--shadow);
     }
-    .top-bar-left { display: flex; align-items: center; gap: 1rem; }
     .admin-title { font-family: var(--font-d); font-size: 1.3rem; color: var(--gold); }
-    .top-bar-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 
-    /* Sale toggle */
-    .sale-section {
-      display: flex; align-items: center; gap: 0.6rem;
-      background: rgba(192,57,43,0.07);
-      border: 1px solid rgba(192,57,43,0.2);
-      border-radius: 999px;
-      padding: 0.35rem 0.9rem;
+    /* Sale mode switcher */
+    .sale-mode-box {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(192,57,43,0.06);
+      border: 1px solid rgba(192,57,43,0.18);
+      border-radius: 12px; padding: 0.5rem 0.9rem;
+      flex-wrap: wrap; gap: 0.6rem;
     }
-    .sale-label { font-size: 0.78rem; font-weight: 700; color: var(--red); letter-spacing: 0.04em; }
-    .toggle-wrap { display: flex; align-items: center; gap: 0.4rem; }
-    .toggle {
-      position: relative; width: 40px; height: 22px;
-      cursor: pointer;
+    .sale-mode-label { font-size: 0.72rem; font-weight: 800; color: var(--red); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* Mode tabs */
+    .mode-tabs { display: flex; gap: 0.3rem; }
+    .mode-tab {
+      font-size: 0.7rem; font-weight: 700; padding: 0.28rem 0.7rem;
+      border-radius: 999px; border: 1px solid rgba(192,57,43,0.25);
+      cursor: pointer; background: transparent; color: var(--red);
+      transition: all 0.18s; font-family: var(--font);
     }
+    .mode-tab.active { background: var(--red); color: #fff; border-color: var(--red); }
+
+    /* Global toggle */
+    .global-toggle-wrap { display: flex; align-items: center; gap: 0.45rem; }
+    .toggle { position: relative; width: 40px; height: 22px; cursor: pointer; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-      position: absolute; inset: 0;
-      background: #ddd; border-radius: 999px;
-      transition: background 0.2s;
+      position: absolute; inset: 0; background: #ddd;
+      border-radius: 999px; transition: background 0.2s;
     }
     .toggle-slider::before {
       content: ''; position: absolute;
       width: 16px; height: 16px; border-radius: 50%;
       background: #fff; top: 3px; left: 3px;
-      transition: transform 0.2s;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     .toggle input:checked + .toggle-slider { background: var(--red); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
-    .toggle-state { font-size: 0.72rem; font-weight: 700; color: var(--muted); width: 24px; }
+    .toggle-state { font-size: 0.7rem; font-weight: 800; color: var(--muted); min-width: 22px; }
 
-    .discount-wrap {
-      display: flex; align-items: center; gap: 0.4rem;
-      opacity: 0.4; pointer-events: none; transition: opacity 0.2s;
-    }
-    .discount-wrap.active { opacity: 1; pointer-events: all; }
-    .discount-wrap label { font-size: 0.75rem; font-weight: 600; color: var(--red); }
-    .discount-input {
-      width: 56px; padding: 0.3rem 0.5rem;
-      border: 1px solid rgba(192,57,43,0.3); border-radius: var(--radius);
+    /* Pct input */
+    .pct-wrap { display: flex; align-items: center; gap: 0.35rem; }
+    .pct-wrap label { font-size: 0.72rem; font-weight: 600; color: var(--red); }
+    .pct-input {
+      width: 52px; padding: 0.28rem 0.45rem; text-align: center;
+      border: 1px solid rgba(192,57,43,0.3); border-radius: 6px;
       font-family: var(--font); font-size: 0.82rem; font-weight: 700;
-      color: var(--red); background: #fff; outline: none; text-align: center;
+      color: var(--red); background: #fff; outline: none;
     }
 
-    .save-all-btn {
+    .top-bar-right { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .save-btn {
       background: var(--gold); border: none; border-radius: var(--radius);
       color: #fff; font-family: var(--font); font-size: 0.78rem; font-weight: 700;
-      padding: 0.45rem 1.1rem; cursor: pointer; transition: all 0.2s;
-      letter-spacing: 0.03em;
+      padding: 0.5rem 1.1rem; cursor: pointer; transition: all 0.2s;
     }
-    .save-all-btn:hover { background: var(--gold-lt); }
-    .save-all-btn.saving { background: #888; cursor: not-allowed; }
-    .save-all-btn.saved { background: var(--green); }
-
+    .save-btn:hover { background: var(--gold-lt); }
+    .save-btn.saving { background: #aaa; cursor: not-allowed; }
+    .save-btn.saved  { background: var(--green); }
     .logout-btn {
-      background: none; border: 1px solid var(--border);
-      border-radius: var(--radius); color: var(--muted);
-      font-family: var(--font); font-size: 0.75rem; font-weight: 600;
-      padding: 0.4rem 0.8rem; cursor: pointer; transition: all 0.2s;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--muted); font-family: var(--font); font-size: 0.75rem; font-weight: 600;
+      padding: 0.45rem 0.8rem; cursor: pointer; transition: all 0.2s;
     }
     .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-    /* ── Main content ── */
+    /* ── Main ── */
     .admin-main { max-width: 1300px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
-
-    .section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap;
-    }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .section-title { font-family: var(--font-d); font-size: 1.1rem; color: var(--text); }
-    .item-count-badge {
-      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    .count-badge {
+      font-size: 0.7rem; font-weight: 700; color: var(--muted);
       background: rgba(180,130,40,0.1); border: 1px solid var(--border);
-      border-radius: 999px; padding: 0.2rem 0.6rem;
+      border-radius: 999px; padding: 0.2rem 0.6rem; margin-left: 0.6rem;
     }
     .add-btn {
       background: var(--bg-card); border: 1px solid var(--gold-dim);
@@ -169,63 +150,53 @@
 
     /* ── Table ── */
     .table-wrap {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 16px var(--shadow);
     }
     table { width: 100%; border-collapse: collapse; }
     thead { background: rgba(180,130,40,0.07); }
     th {
-      padding: 0.75rem 0.85rem;
-      text-align: left;
-      font-size: 0.65rem; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+      padding: 0.7rem 0.8rem; text-align: left;
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
     }
     tr:not(:last-child) td { border-bottom: 1px solid rgba(180,140,80,0.1); }
-    tr:hover td { background: rgba(180,130,40,0.03); }
-    td { padding: 0.5rem 0.5rem; vertical-align: middle; }
+    tr:hover td { background: rgba(180,130,40,0.025); }
+    td { padding: 0.45rem 0.45rem; vertical-align: middle; }
 
-    /* Editable cells */
     .cell-input {
-      width: 100%; padding: 0.4rem 0.6rem;
+      width: 100%; padding: 0.38rem 0.55rem;
       border: 1px solid transparent; border-radius: 6px;
-      font-family: var(--font); font-size: 0.85rem; color: var(--text);
+      font-family: var(--font); font-size: 0.84rem; color: var(--text);
       background: transparent; outline: none;
       transition: border-color 0.15s, background 0.15s;
     }
-    .cell-input:hover { border-color: var(--border); background: var(--bg); }
-    .cell-input:focus { border-color: var(--gold-dim); background: var(--bg); }
-    .cell-input.price { font-weight: 700; color: var(--gold); width: 90px; }
-    .cell-input.sale-price { font-weight: 700; color: var(--red); width: 90px; }
-    .cell-input.level { width: 60px; text-align: center; }
-
-    select.cell-input {
+    .cell-input:hover  { border-color: var(--border); background: var(--bg); }
+    .cell-input:focus  { border-color: var(--gold-dim); background: var(--bg); }
+    .cell-input.price  { font-weight: 700; color: var(--gold); width: 85px; }
+    .cell-input.sprice { font-weight: 700; color: var(--red);  width: 85px; }
+    .cell-input.level  { width: 55px; text-align: center; }
+    select.cell-input  {
       cursor: pointer; appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b09870'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 0.5rem center;
-      padding-right: 1.5rem;
+      padding-right: 1.4rem;
     }
 
-    /* Sale price column visibility */
-    .sale-price-col { opacity: 0.35; transition: opacity 0.3s; }
-    .sale-price-col.active { opacity: 1; }
+    /* Sale price cell — shown/hidden by mode */
+    .col-manual  { display: none; }
+    .col-pct     { display: none; }
+    .mode-manual .col-manual { display: table-cell; }
+    .mode-pct    .col-pct    { display: table-cell; }
 
-    /* Item sale override toggle */
-    .item-sale-toggle {
-      display: flex; align-items: center; justify-content: center;
-    }
-    .mini-toggle {
-      position: relative; width: 32px; height: 18px; cursor: pointer;
-    }
+    /* Per-item sale toggle (manual mode) */
+    .mini-toggle { position: relative; width: 32px; height: 18px; cursor: pointer; display: block; }
     .mini-toggle input { opacity: 0; width: 0; height: 0; }
     .mini-slider {
-      position: absolute; inset: 0;
-      background: #ddd; border-radius: 999px; transition: background 0.2s;
+      position: absolute; inset: 0; background: #ddd;
+      border-radius: 999px; transition: background 0.2s;
     }
     .mini-slider::before {
       content: ''; position: absolute;
@@ -236,43 +207,30 @@
     .mini-toggle input:checked + .mini-slider { background: var(--red); }
     .mini-toggle input:checked + .mini-slider::before { transform: translateX(14px); }
 
-    /* Image cell */
-    .img-cell { display: flex; align-items: center; gap: 0.5rem; }
-    .img-thumb {
-      width: 36px; height: 36px; border-radius: 6px;
-      object-fit: cover; border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .img-placeholder {
-      width: 36px; height: 36px; border-radius: 6px;
-      background: rgba(180,130,40,0.1); border: 1px dashed var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; flex-shrink: 0;
-    }
-    .img-input {
-      font-size: 0.75rem; color: var(--muted);
-      border: none; background: transparent; outline: none;
-      font-family: var(--font); width: 120px;
-      cursor: pointer;
-    }
-    .img-input::file-selector-button {
-      font-size: 0.68rem; font-family: var(--font);
-      background: rgba(180,130,40,0.1); border: 1px solid var(--border);
-      border-radius: 6px; padding: 0.2rem 0.5rem;
-      cursor: pointer; color: var(--gold); font-weight: 600;
-      margin-right: 0.4rem;
+    /* Computed sale price badge (pct mode) */
+    .computed-price {
+      font-size: 0.82rem; font-weight: 700; color: var(--red);
+      padding: 0.3rem 0.55rem; display: block;
     }
 
-    /* Delete btn */
-    .del-btn {
-      background: none; border: none; cursor: pointer;
-      color: #ddd; font-size: 1rem; padding: 0.3rem;
-      border-radius: 6px; transition: color 0.15s;
-      line-height: 1;
+    /* Image */
+    .img-cell { display: flex; align-items: center; gap: 0.45rem; }
+    .img-thumb { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+    .img-placeholder { width: 34px; height: 34px; border-radius: 6px; background: rgba(180,130,40,0.1); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+    .img-input { font-size: 0.72rem; color: var(--muted); border: none; background: transparent; outline: none; font-family: var(--font); max-width: 110px; cursor: pointer; }
+    .img-input::file-selector-button {
+      font-size: 0.66rem; font-family: var(--font);
+      background: rgba(180,130,40,0.1); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.18rem 0.45rem; cursor: pointer;
+      color: var(--gold); font-weight: 600; margin-right: 0.35rem;
     }
+
+    .del-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1rem; padding: 0.3rem; border-radius: 6px; transition: color 0.15s; }
     .del-btn:hover { color: var(--red); }
 
-    /* Status bar */
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+
+    /* Status */
     .status-bar {
       position: fixed; bottom: 1.5rem; left: 50%;
       transform: translateX(-50%) translateY(80px);
@@ -281,69 +239,69 @@
       padding: 0.6rem 1.4rem; border-radius: 999px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.25);
       transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-      white-space: nowrap; z-index: 200;
-      pointer-events: none;
+      white-space: nowrap; z-index: 200; pointer-events: none;
     }
-    .status-bar.show { transform: translateX(-50%) translateY(0); }
+    .status-bar.show    { transform: translateX(-50%) translateY(0); }
     .status-bar.success { background: var(--green); }
     .status-bar.error   { background: var(--red); }
-
-    /* Loading */
-    .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
-
-    @media (max-width: 768px) {
-      .top-bar { padding: 0.75rem 1rem; }
-      .admin-main { padding: 1rem 1rem 3rem; }
-      th, td { padding: 0.5rem 0.4rem; }
-      .cell-input { font-size: 0.78rem; }
-    }
   </style>
 </head>
 <body>
 
-<!-- ── Login Screen ── -->
+<!-- Login -->
 <div id="login-screen">
   <div class="login-box">
     <h1 class="login-title">Wrath &amp; Friends</h1>
     <p class="login-sub">Admin Panel — Staff Only</p>
-    <input type="password" id="pw-input" placeholder="Enter password…" />
+    <input type="password" id="pw-input" placeholder="Enter password…"/>
     <p class="login-error" id="login-error">Incorrect password. Try again.</p>
     <button class="login-btn" id="login-btn">Enter Admin</button>
   </div>
 </div>
 
-<!-- ── Admin App ── -->
+<!-- Admin -->
 <div id="admin-app">
-
   <div class="top-bar">
-    <div class="top-bar-left">
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
       <span class="admin-title">⚙️ Shop Admin</span>
-    </div>
-    <div class="top-bar-right">
-      <!-- Global Sale Toggle -->
-      <div class="sale-section">
-        <span class="sale-label">🏷️ SALE MODE</span>
-        <label class="toggle">
-          <input type="checkbox" id="sale-toggle"/>
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="toggle-state" id="sale-state">OFF</span>
-        <div class="discount-wrap" id="discount-wrap">
-          <label for="discount-pct">Global %</label>
-          <input type="number" class="discount-input" id="discount-pct" value="20" min="1" max="99"/>
-          <span style="font-size:0.75rem;color:var(--red);font-weight:700;">off</span>
+
+      <!-- Sale controls -->
+      <div class="sale-mode-box">
+        <span class="sale-mode-label">🏷️ Sale</span>
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="tab-manual">Per Item</button>
+          <button class="mode-tab" id="tab-pct">Global %</button>
+        </div>
+
+        <!-- Global % toggle (shown in pct mode) -->
+        <div class="global-toggle-wrap" id="global-toggle-wrap" style="display:none;">
+          <label class="toggle">
+            <input type="checkbox" id="global-sale-toggle"/>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-state" id="global-state">OFF</span>
+          <div class="pct-wrap">
+            <label>Discount:</label>
+            <input type="number" class="pct-input" id="pct-input" value="20" min="1" max="99"/>
+            <span style="font-size:0.72rem;font-weight:700;color:var(--red);">%</span>
+          </div>
         </div>
       </div>
-      <button class="save-all-btn" id="save-btn">💾 Save All Changes</button>
+    </div>
+
+    <div class="top-bar-right">
+      <button class="save-btn" id="save-btn">💾 Save All</button>
       <button class="logout-btn" id="logout-btn">Log out</button>
     </div>
   </div>
 
   <div class="admin-main">
     <div class="section-header">
-      <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div style="display:flex;align-items:center;">
         <span class="section-title">Shop Items</span>
-        <span class="item-count-badge" id="item-count-badge">0 items</span>
+        <span class="count-badge" id="count-badge">0 items</span>
       </div>
       <button class="add-btn" id="add-btn">＋ Add New Item</button>
     </div>
@@ -352,72 +310,57 @@
       <table id="items-table">
         <thead>
           <tr>
-            <th style="width:36px"></th>
-            <th>Item Name</th>
+            <th style="width:30px">#</th>
+            <th>Name</th>
             <th>Category</th>
             <th>Level</th>
             <th>Price</th>
-            <th class="sale-price-col" id="sale-price-header">Sale Price</th>
-            <th class="sale-price-col" id="sale-override-header" style="text-align:center">Override</th>
+            <th class="col-manual">Sale Price</th>
+            <th class="col-manual" style="text-align:center;">On Sale</th>
+            <th class="col-pct">Sale Price (auto)</th>
             <th>Image</th>
-            <th style="width:36px"></th>
+            <th style="width:30px"></th>
           </tr>
         </thead>
         <tbody id="items-body">
-          <tr><td colspan="9" class="loading">Loading items…</td></tr>
+          <tr><td colspan="10" class="loading">Loading items…</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
 </div>
 
 <div class="status-bar" id="status-bar"></div>
 
 <script>
-// ============================================================
-//  Admin Panel — Wrath & Friends
-//  Password protected, inline editing, global sale toggle
-// ============================================================
-
-const GITHUB_OWNER = "wrathishere";
-const GITHUB_REPO  = "rpg-shop";
-const GITHUB_BRANCH = "main";
-const ADMIN_PASSWORD = "wrathfriends2024"; // Change this!
-
-const API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/_data/items`;
+const OWNER    = "wrathishere";
+const REPO     = "rpg-shop";
+const BRANCH   = "main";
+const PASSWORD = "wrathfriends2024";
+const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}/contents`;
 
 // ── Auth ──────────────────────────────────────────────────
 const loginScreen = document.getElementById("login-screen");
 const adminApp    = document.getElementById("admin-app");
 const pwInput     = document.getElementById("pw-input");
-const loginBtn    = document.getElementById("login-btn");
-const loginError  = document.getElementById("login-error");
 
-function checkLogin() {
-  if (sessionStorage.getItem("wf_auth") === "true") showAdmin();
-}
-
-loginBtn.addEventListener("click", () => {
-  if (pwInput.value === ADMIN_PASSWORD) {
-    sessionStorage.setItem("wf_auth", "true");
-    loginError.style.display = "none";
+document.getElementById("login-btn").addEventListener("click", () => {
+  if (pwInput.value === PASSWORD) {
+    sessionStorage.setItem("wf_auth", "1");
+    document.getElementById("login-error").style.display = "none";
     showAdmin();
   } else {
-    loginError.style.display = "block";
-    pwInput.value = "";
-    pwInput.focus();
+    document.getElementById("login-error").style.display = "block";
+    pwInput.value = ""; pwInput.focus();
   }
 });
-
-pwInput.addEventListener("keydown", e => { if (e.key === "Enter") loginBtn.click(); });
-
+pwInput.addEventListener("keydown", e => { if (e.key==="Enter") document.getElementById("login-btn").click(); });
 document.getElementById("logout-btn").addEventListener("click", () => {
   sessionStorage.removeItem("wf_auth");
   adminApp.style.display = "none";
   loginScreen.style.display = "flex";
 });
-
+if (sessionStorage.getItem("wf_auth")) showAdmin();
 function showAdmin() {
   loginScreen.style.display = "none";
   adminApp.style.display = "block";
@@ -425,357 +368,298 @@ function showAdmin() {
 }
 
 // ── State ──────────────────────────────────────────────────
-let items        = [];   // { name, filename, sha, data }
-let saleMode     = false;
+let items       = [];
+let saleMode    = "manual"; // "manual" | "pct"
+let globalSaleOn = false;
 let discountPct  = 20;
-let githubToken  = null; // set via prompt on first save
+let githubToken  = null;
+const table      = document.getElementById("items-table");
 
-// ── Sale toggle ───────────────────────────────────────────
-const saleToggle    = document.getElementById("sale-toggle");
-const saleState     = document.getElementById("sale-state");
-const discountWrap  = document.getElementById("discount-wrap");
-const discountInput = document.getElementById("discount-pct");
-const salePriceHeader    = document.getElementById("sale-price-header");
-const saleOverrideHeader = document.getElementById("sale-override-header");
+// ── Mode tabs ──────────────────────────────────────────────
+document.getElementById("tab-manual").addEventListener("click", () => setMode("manual"));
+document.getElementById("tab-pct").addEventListener("click",    () => setMode("pct"));
 
-saleToggle.addEventListener("change", () => {
-  saleMode = saleToggle.checked;
-  saleState.textContent = saleMode ? "ON" : "OFF";
-  discountWrap.classList.toggle("active", saleMode);
-  document.querySelectorAll(".sale-price-col").forEach(el =>
-    el.classList.toggle("active", saleMode)
-  );
+function setMode(mode) {
+  saleMode = mode;
+  document.getElementById("tab-manual").classList.toggle("active", mode==="manual");
+  document.getElementById("tab-pct").classList.toggle("active",    mode==="pct");
+  document.getElementById("global-toggle-wrap").style.display = mode==="pct" ? "flex" : "none";
+  table.className = mode==="manual" ? "mode-manual" : "mode-pct";
+  refreshComputedPrices();
+}
+setMode("manual");
+
+// Global % toggle
+document.getElementById("global-sale-toggle").addEventListener("change", function() {
+  globalSaleOn = this.checked;
+  document.getElementById("global-state").textContent = globalSaleOn ? "ON" : "OFF";
+  refreshComputedPrices();
+});
+document.getElementById("pct-input").addEventListener("input", function() {
+  discountPct = parseInt(this.value) || 20;
+  refreshComputedPrices();
 });
 
-discountInput.addEventListener("input", () => {
-  discountPct = parseInt(discountInput.value) || 20;
-  // Auto-calculate sale prices for items without override
-  items.forEach((item, i) => {
-    if (!item.data.saleOverride) {
-      const sp = Math.round(item.data.price * (1 - discountPct / 100));
-      const spInput = document.querySelector(`[data-index="${i}"][data-field="salePrice"]`);
-      if (spInput) spInput.value = sp;
-      item.data.salePrice = sp;
-    }
+function refreshComputedPrices() {
+  if (saleMode !== "pct") return;
+  document.querySelectorAll(".computed-price").forEach(el => {
+    const i = parseInt(el.dataset.index);
+    if (!items[i]) return;
+    const sp = Math.round((items[i].data.price || 0) * (1 - discountPct / 100));
+    el.textContent = globalSaleOn ? `💰 ${sp.toLocaleString()}` : "—";
+    items[i].data.salePricePct = sp;
   });
-});
+}
 
-// ── Load items from GitHub API ────────────────────────────
+// ── Load ───────────────────────────────────────────────────
 async function loadItems() {
   try {
-    const res   = await fetch(`${API}?ref=${GITHUB_BRANCH}`);
+    const res   = await fetch(`${API_BASE}/_data/items?ref=${BRANCH}`);
     const files = await res.json();
+    if (!Array.isArray(files)) throw new Error("Could not read folder");
 
-    if (!Array.isArray(files)) throw new Error("Could not load files");
+    const jsonFiles = files.filter(f => f.name.endsWith(".json") && f.name !== "manifest.json");
+    items = await Promise.all(jsonFiles.map(async f => {
+      const r    = await fetch(f.download_url);
+      const data = await r.json();
+      return { filename: f.name, sha: f.sha, data };
+    }));
 
-    const jsonFiles = files.filter(f =>
-      f.name.endsWith(".json") && f.name !== "manifest.json"
-    );
-
-    const loaded = await Promise.all(
-      jsonFiles.map(async f => {
-        const r    = await fetch(f.download_url);
-        const data = await r.json();
-        return { filename: f.name, sha: f.sha, data };
-      })
-    );
-
-    items = loaded;
     renderTable();
     updateCount();
-  } catch (err) {
+  } catch(err) {
     document.getElementById("items-body").innerHTML =
-      `<tr><td colspan="9" class="loading" style="color:var(--red)">⚠️ Could not load items: ${err.message}</td></tr>`;
+      `<tr><td colspan="10" class="loading" style="color:var(--red)">⚠️ ${err.message}</td></tr>`;
   }
 }
 
-// ── Render table ──────────────────────────────────────────
+// ── Render ─────────────────────────────────────────────────
 function renderTable() {
   const tbody = document.getElementById("items-body");
-
-  if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="loading">No items yet. Click "+ Add New Item" to start.</td></tr>`;
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="10" class="loading">No items yet — click "+ Add New Item"</td></tr>`;
     return;
   }
 
   tbody.innerHTML = items.map((item, i) => {
-    const d  = item.data;
-    const sp = d.salePrice ?? Math.round((d.price || 0) * (1 - discountPct / 100));
-    const imgSrc = d.image ? `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${d.image}` : null;
+    const d   = item.data;
+    const sp  = d.salePrice ?? "";
+    const spPct = Math.round((d.price||0) * (1 - discountPct/100));
+    const imgSrc = d.image
+      ? `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${d.image}`
+      : null;
 
     return `
-      <tr data-index="${i}">
-        <td style="padding-left:0.75rem;color:var(--dim);font-size:0.75rem;">${i+1}</td>
-        <td><input class="cell-input" data-index="${i}" data-field="name" value="${escHtml(d.name||'')}" placeholder="Item name…"/></td>
-        <td>
-          <select class="cell-input" data-index="${i}" data-field="category">
-            ${["weapon","armor","potion","accessory","scroll","other"].map(c =>
-              `<option value="${c}" ${(d.category||'other')===c?'selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`
-            ).join('')}
-          </select>
-        </td>
-        <td><input class="cell-input level" type="number" min="1" data-index="${i}" data-field="level" value="${d.level||1}"/></td>
-        <td><input class="cell-input price" type="number" min="0" data-index="${i}" data-field="price" value="${d.price||0}"/></td>
-        <td class="sale-price-col ${saleMode?'active':''}">
-          <input class="cell-input sale-price" type="number" min="0" data-index="${i}" data-field="salePrice" value="${sp}"/>
-        </td>
-        <td class="sale-price-col item-sale-toggle ${saleMode?'active':''}">
-          <label class="mini-toggle" title="Override sale price for this item">
-            <input type="checkbox" data-index="${i}" data-field="saleOverride" ${d.saleOverride?'checked':''}/>
-            <span class="mini-slider"></span>
-          </label>
-        </td>
-        <td>
-          <div class="img-cell">
-            ${imgSrc
-              ? `<img class="img-thumb" src="${imgSrc}" alt="" onerror="this.style.display='none'"/>`
-              : `<div class="img-placeholder">🖼️</div>`}
-            <input type="file" class="img-input" data-index="${i}" accept="image/*"/>
-          </div>
-        </td>
-        <td>
-          <button class="del-btn" data-index="${i}" title="Delete item">🗑</button>
-        </td>
-      </tr>`;
-  }).join('');
+    <tr data-index="${i}">
+      <td style="padding-left:0.75rem;color:var(--dim);font-size:0.72rem;">${i+1}</td>
+      <td><input class="cell-input" data-index="${i}" data-field="name" value="${esc(d.name||'')}" placeholder="Item name…"/></td>
+      <td>
+        <select class="cell-input" data-index="${i}" data-field="category">
+          ${["weapon","armor","potion","accessory","scroll","other"].map(c =>
+            `<option value="${c}" ${(d.category||"other")===c?"selected":""}>${c[0].toUpperCase()+c.slice(1)}</option>`
+          ).join("")}
+        </select>
+      </td>
+      <td><input class="cell-input level" type="number" min="1" data-index="${i}" data-field="level" value="${d.level||1}"/></td>
+      <td><input class="cell-input price" type="number" min="0" data-index="${i}" data-field="price" value="${d.price||0}"/></td>
 
-  attachTableListeners();
+      <!-- Manual: sale price + per-item toggle -->
+      <td class="col-manual">
+        <input class="cell-input sprice" type="number" min="0" data-index="${i}" data-field="salePrice" value="${sp}" placeholder="Sale price…"/>
+      </td>
+      <td class="col-manual" style="text-align:center;">
+        <label class="mini-toggle">
+          <input type="checkbox" data-index="${i}" data-field="onSale" ${d.onSale?"checked":""}/>
+          <span class="mini-slider"></span>
+        </label>
+      </td>
+
+      <!-- Pct: computed price -->
+      <td class="col-pct">
+        <span class="computed-price" data-index="${i}">${globalSaleOn ? "💰 "+spPct.toLocaleString() : "—"}</span>
+      </td>
+
+      <!-- Image -->
+      <td>
+        <div class="img-cell">
+          ${imgSrc
+            ? `<img class="img-thumb" src="${imgSrc}" alt="" onerror="this.style.display='none'"/>`
+            : `<div class="img-placeholder">🖼️</div>`}
+          <input type="file" class="img-input" data-index="${i}" accept="image/*"/>
+        </div>
+      </td>
+      <td><button class="del-btn" data-index="${i}" title="Delete">🗑</button></td>
+    </tr>`;
+  }).join("");
+
+  attachListeners();
+  refreshComputedPrices();
 }
 
 function updateCount() {
-  document.getElementById("item-count-badge").textContent = `${items.length} item${items.length!==1?'s':''}`;
+  document.getElementById("count-badge").textContent = `${items.length} item${items.length!==1?"s":""}`;
 }
 
-// ── Table event listeners ─────────────────────────────────
-function attachTableListeners() {
-  // Text / number / select inputs
-  document.querySelectorAll(".cell-input[data-field]").forEach(input => {
-    input.addEventListener("change", () => {
-      const i   = parseInt(input.dataset.index);
-      const field = input.dataset.field;
-      let val = input.value;
-      if (field === "price" || field === "salePrice" || field === "level") {
-        val = parseFloat(val) || 0;
-        // Auto-calc sale price when price changes and no override
-        if (field === "price" && !items[i].data.saleOverride) {
-          const sp = Math.round(val * (1 - discountPct / 100));
-          items[i].data.salePrice = sp;
-          const spInput = document.querySelector(`[data-index="${i}"][data-field="salePrice"]`);
-          if (spInput) spInput.value = sp;
-        }
-      }
-      items[i].data[field] = val;
+// ── Listeners ──────────────────────────────────────────────
+function attachListeners() {
+  document.querySelectorAll(".cell-input[data-field]").forEach(el => {
+    el.addEventListener("change", () => {
+      const i = +el.dataset.index, f = el.dataset.field;
+      items[i].data[f] = (f==="price"||f==="salePrice"||f==="level") ? (parseFloat(el.value)||0) : el.value;
+      if (f==="price") refreshComputedPrices();
     });
   });
 
-  // Sale override checkboxes
-  document.querySelectorAll("input[data-field='saleOverride']").forEach(cb => {
-    cb.addEventListener("change", () => {
-      const i = parseInt(cb.dataset.index);
-      items[i].data.saleOverride = cb.checked;
-      if (!cb.checked) {
-        const sp = Math.round((items[i].data.price||0) * (1 - discountPct / 100));
-        items[i].data.salePrice = sp;
-        const spInput = document.querySelector(`[data-index="${i}"][data-field="salePrice"]`);
-        if (spInput) spInput.value = sp;
-      }
-    });
+  document.querySelectorAll("input[data-field='onSale']").forEach(cb => {
+    cb.addEventListener("change", () => { items[+cb.dataset.index].data.onSale = cb.checked; });
   });
 
-  // Image upload
-  document.querySelectorAll("input[type='file'][data-index]").forEach(input => {
-    input.addEventListener("change", async () => {
-      const i    = parseInt(input.dataset.index);
-      const file = input.files[0];
+  document.querySelectorAll("input[type='file'][data-index]").forEach(inp => {
+    inp.addEventListener("change", () => {
+      const i = +inp.dataset.index, file = inp.files[0];
       if (!file) return;
-      const filename = `images/${file.name.replace(/\s+/g, '-').toLowerCase()}`;
-      items[i].data.image       = filename;
-      items[i].data._imageFile  = file;
-      items[i].data._imageFilename = filename;
-      showStatus(`📎 Image "${file.name}" queued — save to upload`, "");
+      const path = `images/${file.name.replace(/\s+/g,"-").toLowerCase()}`;
+      items[i].data.image = path;
+      items[i].data._imgFile = file;
+      items[i].data._imgPath = path;
+      showStatus(`📎 "${file.name}" queued — click Save`, "");
     });
   });
 
-  // Delete buttons
   document.querySelectorAll(".del-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const i = parseInt(btn.dataset.index);
+      const i = +btn.dataset.index;
       if (confirm(`Delete "${items[i].data.name}"?`)) {
         items[i]._deleted = true;
         items.splice(i, 1);
-        renderTable();
-        updateCount();
+        renderTable(); updateCount();
       }
     });
   });
 }
 
-// ── Add new item ──────────────────────────────────────────
+// ── Add new ────────────────────────────────────────────────
 document.getElementById("add-btn").addEventListener("click", () => {
-  const slug = `item-${Date.now()}`;
   items.push({
-    filename: `${slug}.json`,
-    sha: null,
-    data: { name: "", price: 0, category: "other", level: 1, sale: false, image: "", description: "" },
-    _new: true,
+    filename: `item-${Date.now()}.json`,
+    sha: null, _new: true,
+    data: { name:"", price:0, category:"other", level:1, onSale:false, salePrice:"", image:"", description:"" }
   });
-  renderTable();
-  updateCount();
-  // Focus the new row's name input
+  renderTable(); updateCount();
   const inputs = document.querySelectorAll("[data-field='name']");
   if (inputs.length) inputs[inputs.length-1].focus();
 });
 
-// ── Save all changes ──────────────────────────────────────
-const saveBtn = document.getElementById("save-btn");
-
-saveBtn.addEventListener("click", async () => {
+// ── Save ───────────────────────────────────────────────────
+document.getElementById("save-btn").addEventListener("click", async () => {
   if (!githubToken) {
-    githubToken = prompt("Enter your GitHub Personal Access Token:\n(Settings → Developer settings → Personal access tokens → Classic → repo scope)");
+    githubToken = prompt("Enter your GitHub Personal Access Token:\n(GitHub → Settings → Developer settings → Personal access tokens → Classic → repo scope)");
     if (!githubToken) return;
   }
 
-  saveBtn.textContent = "Saving…";
-  saveBtn.className = "save-all-btn saving";
+  const btn = document.getElementById("save-btn");
+  btn.textContent = "Saving…"; btn.className = "save-btn saving";
 
   try {
-    // Attach sale mode to every item
+    // Stamp sale metadata on every item before saving
     for (const item of items) {
-      item.data.sale = saleMode;
-      if (saleMode) {
-        if (!item.data.saleOverride) {
-          item.data.salePrice = Math.round((item.data.price||0) * (1 - discountPct / 100));
-        }
+      const d = item.data;
+      if (saleMode === "pct") {
+        d.globalSaleOn  = globalSaleOn;
+        d.discountPct   = discountPct;
+        d.salePricePct  = Math.round((d.price||0) * (1 - discountPct/100));
+        d.onSale        = globalSaleOn; // pct mode: all items on sale when global is on
+      }
+      // Upload queued images
+      if (d._imgFile) {
+        await uploadImage(d._imgFile, d._imgPath);
+        delete d._imgFile; delete d._imgPath;
       }
     }
 
-    // Upload any queued images first
+    // Save each item
     for (const item of items) {
-      if (item.data._imageFile) {
-        await uploadImage(item.data._imageFile, item.data._imageFilename);
-        delete item.data._imageFile;
-        delete item.data._imageFilename;
-      }
-    }
-
-    // Save each item JSON
-    for (const item of items) {
-      const cleanData = { ...item.data };
-      delete cleanData._imageFile;
-      delete cleanData._imageFilename;
-
-      await saveFile(
+      const clean = { ...item.data };
+      delete clean._imgFile; delete clean._imgPath;
+      const result = await saveFile(
         `_data/items/${item.filename}`,
-        JSON.stringify(cleanData, null, 2),
+        JSON.stringify(clean, null, 2),
         item.sha,
-        item._new ? `Add item: ${item.data.name}` : `Update item: ${item.data.name}`
+        (item._new ? "Add" : "Update") + ` item: ${item.data.name}`
       );
+      item.sha  = result.content.sha;
       item._new = false;
     }
 
-    // Update manifest.json
-    const manifestContent = JSON.stringify(items.map(i => i.filename), null, 2);
-    const manifestSha = await getFileSha("_data/items/manifest.json");
-    await saveFile("_data/items/manifest.json", manifestContent, manifestSha, "chore: update manifest");
+    // Update manifest
+    const manifest = JSON.stringify(items.map(i => i.filename), null, 2);
+    const mSha     = await getFileSha("_data/items/manifest.json");
+    await saveFile("_data/items/manifest.json", manifest, mSha, "chore: update manifest");
 
-    saveBtn.textContent = "✅ Saved!";
-    saveBtn.className = "save-all-btn saved";
-    showStatus("✅ All changes saved! Shop will update in ~2 minutes.", "success");
+    btn.textContent = "✅ Saved!"; btn.className = "save-btn saved";
+    showStatus("✅ Saved! Shop updates in ~2 minutes.", "success");
+    setTimeout(() => { btn.textContent = "💾 Save All"; btn.className = "save-btn"; }, 3000);
 
-    setTimeout(() => {
-      saveBtn.textContent = "💾 Save All Changes";
-      saveBtn.className = "save-all-btn";
-    }, 3000);
-
-    // Reload to get fresh SHAs
-    await loadItems();
-
-  } catch (err) {
-    saveBtn.textContent = "💾 Save All Changes";
-    saveBtn.className = "save-all-btn";
-    showStatus(`❌ Error: ${err.message}`, "error");
+  } catch(err) {
+    btn.textContent = "💾 Save All"; btn.className = "save-btn";
+    showStatus(`❌ ${err.message}`, "error");
     console.error(err);
   }
 });
 
-// ── GitHub API helpers ────────────────────────────────────
+// ── GitHub helpers ─────────────────────────────────────────
 async function saveFile(path, content, sha, message) {
-  const body = {
-    message,
-    content: btoa(unescape(encodeURIComponent(content))),
-    branch: GITHUB_BRANCH,
-  };
+  const body = { message, content: btoa(unescape(encodeURIComponent(content))), branch: BRANCH };
   if (sha) body.sha = sha;
-
-  const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
     method: "PUT",
-    headers: {
-      "Authorization": `token ${githubToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
+    headers: { "Authorization": `token ${githubToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
   });
-
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || `Failed to save ${path}`);
-  }
+  if (!res.ok) { const e = await res.json(); throw new Error(e.message||`Failed: ${path}`); }
   return res.json();
 }
 
 async function uploadImage(file, path) {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const reader = new FileReader();
     reader.onload = async () => {
-      const base64 = reader.result.split(",")[1];
-      const sha    = await getFileSha(path);
-      const body   = {
-        message: `Upload image: ${path}`,
-        content: base64,
-        branch:  GITHUB_BRANCH,
-      };
+      const b64 = reader.result.split(",")[1];
+      const sha = await getFileSha(path);
+      const body = { message: `Upload: ${path}`, content: b64, branch: BRANCH };
       if (sha) body.sha = sha;
-
-      const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
         method: "PUT",
         headers: { "Authorization": `token ${githubToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
       });
-
-      if (!res.ok) reject(new Error(`Failed to upload image ${path}`));
-      else resolve(await res.json());
+      if (!r.ok) rej(new Error(`Failed to upload ${path}`)); else res(await r.json());
     };
-    reader.onerror = reject;
+    reader.onerror = rej;
     reader.readAsDataURL(file);
   });
 }
 
 async function getFileSha(path) {
-  const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`, {
-    headers: githubToken ? { "Authorization": `token ${githubToken}` } : {},
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.sha || null;
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`,
+    githubToken ? { headers: { "Authorization": `token ${githubToken}` } } : {}
+  );
+  if (!r.ok) return null;
+  return (await r.json()).sha || null;
 }
 
-// ── Status bar ────────────────────────────────────────────
-let statusTimer;
+// ── Status ─────────────────────────────────────────────────
+let stTimer;
 function showStatus(msg, type) {
   const bar = document.getElementById("status-bar");
-  bar.textContent  = msg;
-  bar.className    = `status-bar show ${type}`;
-  clearTimeout(statusTimer);
-  statusTimer = setTimeout(() => bar.classList.remove("show"), 4000);
+  bar.textContent = msg; bar.className = `status-bar show ${type}`;
+  clearTimeout(stTimer);
+  stTimer = setTimeout(() => bar.classList.remove("show"), 4000);
 }
 
-// ── Helpers ───────────────────────────────────────────────
-function escHtml(str) {
-  return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 }
-
-// ── Init ──────────────────────────────────────────────────
-checkLogin();
 </script>
 </body>
 </html>
