@@ -119,7 +119,7 @@
     await loadItemsFromSheet();
 
     if (ITEMS.length === 0) {
-      grid.innerHTML = `<div class="loading-state">⚠️ Could not load items. Make sure your Google Sheet is set to public.</div>`;
+      grid.innerHTML = `<div class="loading-state">⚠️Could not load items. Please try refreshing the page. </div>`;
       return;
     }
 
