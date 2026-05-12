@@ -6,8 +6,8 @@
   "category": "weapon",
   "image": "images/pexels-3alkan-34610755.jpg",
   "salePrice": 775,
-  "onSale": false,
-  "salePricePct": 320,
-  "globalSaleOn": true,
-  "discountPct": 20
+  "onSale": true,
+  "salePricePct": null,
+  "globalSaleOn": false,
+  "discountPct": 0
 }
