@@ -8,8 +8,8 @@
   "description": "it's a viking chocolate",
   "saleOverride": false,
   "salePrice": 72,
-  "salePricePct": 72,
-  "globalSaleOn": true,
-  "discountPct": 20,
+  "salePricePct": null,
+  "globalSaleOn": false,
+  "discountPct": 0,
   "onSale": false
 }
