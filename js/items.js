@@ -1,52 +1,48 @@
 // ============================================================
-//  items.js — Loads shop items from Google Sheets
-//  Sheet ID: 1LYE8aTssm-Zvp5UAoezqhP74DwpHn5nBXJpK1KjHDVU
-//  Columns: name, price, category, level, image
+//  items.js — Loads shop items from _data/items/*.json
+//  Each JSON file is one item, managed via Decap CMS admin
 // ============================================================
-
-const SHEET_ID  = "1LYE8aTssm-Zvp5UAoezqhP74DwpHn5nBXJpK1KjHDVU";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let ITEMS = [];
 
 async function loadItemsFromSheet() {
   try {
-    const response = await fetch(SHEET_URL);
-    const text     = await response.text();
+    // Fetch the manifest listing all item files
+    const res  = await fetch("_data/items/manifest.json");
+    const manifest = await res.json();
 
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    const rows = json.table.rows;
+    const results = await Promise.all(
+      manifest.map(filename =>
+        fetch(`_data/items/${filename}`).then(r => r.json())
+      )
+    );
 
-    ITEMS = rows
-      .filter(row => row.c[0] && row.c[0].v)
-      .map((row, index) => {
-        const get = (i) =>
-          row.c[i] && row.c[i].v !== null ? String(row.c[i].v).trim() : "";
-
-        const category = get(2).toLowerCase() || "misc";
-        const imageVal = get(4);
-
-        const categoryEmojis = {
-          weapon:    "⚔️",
-          armor:     "🛡️",
-          potion:    "🧪",
-          accessory: "💍",
-          scroll:    "📜",
-        };
-
-        return {
-          id:       index + 1,
-          name:     get(0),
-          price:    parseFloat(get(1)) || 0,
-          category,
-          level:    get(3) || "1",
-          emoji:    categoryEmojis[category] || "🎁",
-          image:    imageVal ? `images/${imageVal}` : null,
-        };
-      });
+    ITEMS = results.map((item, index) => ({
+      id:          index + 1,
+      name:        item.name        || "Unnamed Item",
+      price:       item.price       || 0,
+      category:    (item.category   || "other").toLowerCase(),
+      level:       item.level       || 1,
+      sale:        item.sale        || false,
+      image:       item.image       || null,
+      description: item.description || "",
+      emoji:       categoryEmoji(item.category),
+    }));
 
   } catch (err) {
-    console.error("Could not load items from Google Sheet:", err);
+    console.error("Could not load items:", err);
     ITEMS = [];
   }
+}
+
+function categoryEmoji(cat) {
+  const map = {
+    weapon:    "⚔️",
+    armor:     "🛡️",
+    potion:    "🧪",
+    accessory: "💍",
+    scroll:    "📜",
+    other:     "🎁",
+  };
+  return map[(cat || "").toLowerCase()] || "🎁";
 }

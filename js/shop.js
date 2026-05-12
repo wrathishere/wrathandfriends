@@ -1,8 +1,3 @@
-// ============================================================
-//  shop.js — Wrath and Friends catalogue
-//  Uses level (number) instead of rarity
-// ============================================================
-
 (function () {
   "use strict";
 
@@ -17,7 +12,6 @@
   const modalContent  = document.getElementById("modal-content");
   const modalClose    = document.getElementById("modal-close");
 
-  // ── Filtering ──────────────────────────────────────────
   function getFilteredItems() {
     return ITEMS.filter(item => {
       const matchCat    = activeCategory === "all" || item.category === activeCategory;
@@ -28,31 +22,28 @@
     });
   }
 
-  // ── Card HTML ──────────────────────────────────────────
   function buildCard(item) {
-    const img = item.image
+    const media = item.image
       ? `<div class="card-img-wrap"><img src="${item.image}" alt="${item.name}" class="card-img" loading="lazy"/></div>`
-      : `<div class="card-emoji" aria-hidden="true">${item.emoji}</div>`;
+      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
+
+    const saleBadge = item.sale ? `<span class="sale-badge">Sale</span>` : "";
 
     return `
-      <article
-        class="item-card"
-        data-id="${item.id}"
-        tabindex="0"
-        role="button"
-        aria-label="View details for ${item.name}"
-      >
+      <article class="item-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.name}">
+        ${media}
+        ${saleBadge}
         <div class="card-badge">Lv. ${item.level}</div>
-        ${img}
-        <h2 class="card-name">${item.name}</h2>
-        <div class="card-footer">
-          <span class="card-price">💰 ${item.price.toLocaleString()}</span>
-          <span class="card-category">${item.category}</span>
+        <div class="card-info">
+          <h2 class="card-name">${item.name}</h2>
+          <div class="card-footer">
+            <span class="card-price">💰 ${item.price.toLocaleString()}</span>
+            <span class="card-category">${item.category}</span>
+          </div>
         </div>
       </article>`;
   }
 
-  // ── Render grid ────────────────────────────────────────
   function render() {
     const filtered = getFilteredItems();
     itemCount.textContent = `${filtered.length} item${filtered.length !== 1 ? "s" : ""}`;
@@ -63,17 +54,14 @@
     } else {
       emptyState.classList.add("hidden");
       grid.innerHTML = filtered.map(buildCard).join("");
-
       grid.querySelectorAll(".item-card").forEach((card, i) => {
         card.style.animationDelay = `${i * 55}ms`;
         card.classList.add("card-enter");
       });
-
       attachCardListeners();
     }
   }
 
-  // ── Card listeners ─────────────────────────────────────
   function attachCardListeners() {
     grid.querySelectorAll(".item-card").forEach(card => {
       const id = parseInt(card.dataset.id, 10);
@@ -84,26 +72,26 @@
     });
   }
 
-  // ── Modal ──────────────────────────────────────────────
   function openModal(id) {
     const item = ITEMS.find(i => i.id === id);
     if (!item) return;
 
-    const img = item.image
-      ? `<img src="${item.image}" alt="${item.name}" class="modal-img"/>`
-      : `<div class="modal-emoji">${item.emoji}</div>`;
+    const media = item.image
+      ? `<div class="modal-img-wrap"><img src="${item.image}" alt="${item.name}" class="modal-img"/></div>`
+      : `<div class="modal-img-wrap"><div class="modal-emoji">${item.emoji}</div></div>`;
+
+    const saleLine = item.sale ? `<span class="sale-badge" style="position:static;margin-bottom:0.25rem;">On Sale!</span>` : "";
 
     modalContent.innerHTML = `
-      <div class="modal-top">
-        <div class="modal-img-wrap">${img}</div>
-        <div class="modal-header-text">
-          <span class="modal-level-badge">Level ${item.level}</span>
-          <h2 class="modal-title" id="modal-title">${item.name}</h2>
+      ${media}
+      <div class="modal-body">
+        ${saleLine}
+        <span class="modal-level-badge">Level ${item.level}</span>
+        <h2 class="modal-title" id="modal-title">${item.name}</h2>
+        <div class="modal-actions">
+          <span class="modal-price">💰 ${item.price.toLocaleString()}</span>
           <span class="modal-category-tag">${item.category}</span>
         </div>
-      </div>
-      <div class="modal-actions">
-        <span class="modal-price">💰 ${item.price.toLocaleString()}</span>
       </div>
     `;
 
@@ -117,7 +105,6 @@
     document.body.style.overflow = "";
   }
 
-  // ── Event listeners ────────────────────────────────────
   searchInput.addEventListener("input", e => {
     searchQuery = e.target.value.trim().toLowerCase();
     render();
@@ -127,7 +114,6 @@
   modalBackdrop.addEventListener("click", e => { if (e.target === modalBackdrop) closeModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
-  // ── Init ───────────────────────────────────────────────
   async function init() {
     grid.innerHTML = `<div class="loading-state">Loading items…</div>`;
     await loadItemsFromSheet();
@@ -137,7 +123,6 @@
       return;
     }
 
-    // Build category pills dynamically from sheet data
     const categories = [...new Set(ITEMS.map(i => i.category))];
     const pillsContainer = document.querySelector(".category-pills");
     pillsContainer.innerHTML = `<button class="pill active" data-category="all">All Items</button>`;
