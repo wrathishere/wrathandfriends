@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: wrathishere/rpg-shop
+  name: git-gateway
   branch: main
 
 media_folder: "images"
@@ -15,18 +14,17 @@ collections:
     slug: "{{slug}}"
     identifier_field: name
     summary: "{{name}} — 💰 {{price}} — Lv.{{level}} — {{category}}"
+    format: "json"
     fields:
       - label: "Item Name"
         name: "name"
         widget: "string"
-        hint: "The display name of the item"
 
       - label: "Price"
         name: "price"
         widget: "number"
         value_type: "int"
         min: 0
-        hint: "Price in your currency"
 
       - label: "Category"
         name: "category"
@@ -38,7 +36,6 @@ collections:
           - { label: "💍 Accessory", value: "accessory" }
           - { label: "📜 Scroll", value: "scroll" }
           - { label: "🎁 Other", value: "other" }
-        hint: "What type of item is this?"
 
       - label: "Level"
         name: "level"
@@ -46,22 +43,18 @@ collections:
         value_type: "int"
         min: 1
         default: 1
-        hint: "Required level to use this item"
 
       - label: "On Sale"
         name: "sale"
         widget: "boolean"
         default: false
-        hint: "Toggle to show a Sale badge on this item"
 
       - label: "Item Image"
         name: "image"
         widget: "image"
         required: false
-        hint: "Upload the item image (will be stored in /images folder)"
 
       - label: "Description"
         name: "description"
         widget: "text"
         required: false
-        hint: "Optional short description shown in the item modal"
