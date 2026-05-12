@@ -3,6 +3,7 @@ backend:
   repo: wrathishere/rpg-shop
   branch: main
   base_url: https://wrathfriends.netlify.app
+  auth_endpoint: auth
 
 media_folder: "images"
 public_folder: "images"
