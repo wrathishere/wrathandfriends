@@ -515,3 +515,77 @@ body {
   .filter-inner { flex-direction: column; align-items: flex-start; }
   .search-wrap { flex: 1 1 100%; }
 }
+
+/* ── Sale pricing ─────────────────────────────────────────── */
+.price-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  line-height: 1.2;
+}
+
+.price-original {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+}
+
+.price-sale {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--red);
+}
+
+/* Sale ribbon on card */
+.sale-ribbon {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  z-index: 2;
+}
+
+/* On sale card subtle highlight */
+.item-card.on-sale {
+  border-color: rgba(192, 57, 43, 0.2);
+}
+
+.item-card.on-sale::before {
+  background: var(--red) !important;
+  opacity: 0.5;
+}
+
+/* Modal sale tag */
+.sale-tag {
+  display: inline-block;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
+/* Modal price for sale items */
+.modal-actions .price-wrap {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.modal-actions .price-original {
+  font-size: 0.95rem;
+}
