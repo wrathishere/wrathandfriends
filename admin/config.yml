@@ -1,10 +1,6 @@
 backend:
-  name: github
-  repo: wrathishere/rpg-shop
+  name: git-gateway
   branch: main
-  base_url: https://wrathfriends.netlify.app
-  auth_endpoint: auth
-
 media_folder: "images"
 public_folder: "images"
 
