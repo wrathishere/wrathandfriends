@@ -7,13 +7,16 @@ let ITEMS = [];
 
 async function loadItemsFromSheet() {
   try {
-    // Fetch the manifest listing all item files
-    const res  = await fetch("_data/items/manifest.json");
+    // Use relative path that works on GitHub Pages subdirectory
+    const base = window.location.pathname.replace(/\/[^/]*$/, '');
+    const manifestUrl = `${base}/_data/items/manifest.json`;
+
+    const res      = await fetch(manifestUrl);
     const manifest = await res.json();
 
     const results = await Promise.all(
       manifest.map(filename =>
-        fetch(`_data/items/${filename}`).then(r => r.json())
+        fetch(`${base}/_data/items/${filename}`).then(r => r.json())
       )
     );
 
