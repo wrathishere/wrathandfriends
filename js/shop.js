@@ -13,13 +13,15 @@
   const modalClose    = document.getElementById("modal-close");
 
   // ── Sale price helper ──────────────────────────────────
+  // Priority: per-item onSale > globalSaleOn
+  // They are mutually exclusive based on which mode was active when saved
   function getSaleInfo(item) {
-    // Per-item manual sale
-    if (item.onSale && item.salePrice !== "" && item.salePrice !== undefined && item.salePrice !== null) {
+    // Per-item manual sale — only if onSale is explicitly true AND salePrice exists
+    if (item.onSale === true && item.salePrice !== null && item.salePrice !== "" && item.salePrice !== undefined) {
       return { onSale: true, salePrice: item.salePrice };
     }
-    // Global percentage sale
-    if (item.globalSaleOn && item.salePricePct !== undefined) {
+    // Global percentage sale — only if globalSaleOn is true AND onSale is NOT explicitly false
+    if (item.globalSaleOn === true && item.onSale !== true && item.salePricePct !== null && item.salePricePct !== undefined) {
       return { onSale: true, salePrice: item.salePricePct };
     }
     return { onSale: false, salePrice: null };
@@ -32,7 +34,7 @@
       return `
         <div class="price-wrap">
           <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale">💰 ${salePrice.toLocaleString()}</span>
+          <span class="price-sale">💰 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
     return `<span class="card-price">💰 ${item.price.toLocaleString()}</span>`;
@@ -44,7 +46,7 @@
       return `
         <div class="price-wrap">
           <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale" style="font-size:1.2rem;">💰 ${salePrice.toLocaleString()}</span>
+          <span class="price-sale" style="font-size:1.2rem;">💰 ${Number(salePrice).toLocaleString()}</span>
           <span class="sale-tag">SALE</span>
         </div>`;
     }
