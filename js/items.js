@@ -1,23 +1,26 @@
 // ============================================================
 //  items.js — Loads shop items from _data/items/*.json
-//  Each JSON file is one item, managed via Decap CMS admin
+//  No manifest needed — reads list directly from GitHub API
 // ============================================================
 
 let ITEMS = [];
 
 async function loadItemsFromSheet() {
   try {
-    // Use relative path that works on GitHub Pages subdirectory
-    const base = window.location.pathname.replace(/\/[^/]*$/, '');
-    const manifestUrl = `${base}/_data/items/manifest.json`;
+    // Use GitHub API to list all JSON files in _data/items/
+    // This always reflects the latest files without needing a manifest
+    const apiUrl = "https://api.github.com/repos/wrathishere/rpg-shop/contents/_data/items";
+    const res    = await fetch(apiUrl);
+    const files  = await res.json();
 
-    const res      = await fetch(manifestUrl);
-    const manifest = await res.json();
+    // Filter to only .json files, exclude manifest.json
+    const jsonFiles = files.filter(f =>
+      f.name.endsWith(".json") && f.name !== "manifest.json"
+    );
 
+    // Fetch each item file
     const results = await Promise.all(
-      manifest.map(filename =>
-        fetch(`${base}/_data/items/${filename}`).then(r => r.json())
-      )
+      jsonFiles.map(f => fetch(f.download_url).then(r => r.json()))
     );
 
     ITEMS = results.map((item, index) => ({
