@@ -565,10 +565,17 @@ document.getElementById("save-btn").addEventListener("click", async () => {
     for (const item of items) {
       const d = item.data;
       if (saleMode === "pct") {
+        // Global % mode — clear per-item flags, set global ones
         d.globalSaleOn  = globalSaleOn;
         d.discountPct   = discountPct;
         d.salePricePct  = Math.round((d.price||0) * (1 - discountPct/100));
-        d.onSale        = globalSaleOn; // pct mode: all items on sale when global is on
+        d.onSale        = false;
+        d.salePrice     = "";
+      } else {
+        // Per item mode — clear global flags
+        d.globalSaleOn  = false;
+        d.discountPct   = 0;
+        d.salePricePct  = null;
       }
       // Upload queued images
       if (d._imgFile) {
