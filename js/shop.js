@@ -12,43 +12,84 @@
   const modalContent  = document.getElementById("modal-content");
   const modalClose    = document.getElementById("modal-close");
 
-  function getFilteredItems() {
+  // ── Sale price helper ──────────────────────────────────
+  function getSaleInfo(item) {
+    // Per-item manual sale
+    if (item.onSale && item.salePrice !== "" && item.salePrice !== undefined && item.salePrice !== null) {
+      return { onSale: true, salePrice: item.salePrice };
+    }
+    // Global percentage sale
+    if (item.globalSaleOn && item.salePricePct !== undefined) {
+      return { onSale: true, salePrice: item.salePricePct };
+    }
+    return { onSale: false, salePrice: null };
+  }
+
+  // ── Price display HTML ─────────────────────────────────
+  function priceHTML(item) {
+    const { onSale, salePrice } = getSaleInfo(item);
+    if (onSale) {
+      return `
+        <div class="price-wrap">
+          <span class="price-original">💰 ${item.price.toLocaleString()}</span>
+          <span class="price-sale">💰 ${salePrice.toLocaleString()}</span>
+        </div>`;
+    }
+    return `<span class="card-price">💰 ${item.price.toLocaleString()}</span>`;
+  }
+
+  function modalPriceHTML(item) {
+    const { onSale, salePrice } = getSaleInfo(item);
+    if (onSale) {
+      return `
+        <div class="price-wrap">
+          <span class="price-original">💰 ${item.price.toLocaleString()}</span>
+          <span class="price-sale" style="font-size:1.2rem;">💰 ${salePrice.toLocaleString()}</span>
+          <span class="sale-tag">SALE</span>
+        </div>`;
+    }
+    return `<span class="modal-price">💰 ${item.price.toLocaleString()}</span>`;
+  }
+
+  // ── Filter ─────────────────────────────────────────────
+  function getFiltered() {
     return ITEMS.filter(item => {
       const matchCat    = activeCategory === "all" || item.category === activeCategory;
-      const matchSearch = searchQuery === "" ||
+      const matchSearch = !searchQuery ||
         item.name.toLowerCase().includes(searchQuery) ||
         item.category.toLowerCase().includes(searchQuery);
       return matchCat && matchSearch;
     });
   }
 
+  // ── Card ───────────────────────────────────────────────
   function buildCard(item) {
+    const { onSale } = getSaleInfo(item);
     const media = item.image
       ? `<div class="card-img-wrap"><img src="${item.image}" alt="${item.name}" class="card-img" loading="lazy"/></div>`
       : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
 
-    const saleBadge = item.sale ? `<span class="sale-badge">Sale</span>` : "";
-
     return `
-      <article class="item-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.name}">
-        ${media}
-        ${saleBadge}
+      <article class="item-card ${onSale ? 'on-sale' : ''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.name}">
+        ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         <div class="card-badge">Lv. ${item.level}</div>
+        ${media}
         <div class="card-info">
           <h2 class="card-name">${item.name}</h2>
           <div class="card-footer">
-            <span class="card-price">💰 ${item.price.toLocaleString()}</span>
+            ${priceHTML(item)}
             <span class="card-category">${item.category}</span>
           </div>
         </div>
       </article>`;
   }
 
+  // ── Render ─────────────────────────────────────────────
   function render() {
-    const filtered = getFilteredItems();
+    const filtered = getFiltered();
     itemCount.textContent = `${filtered.length} item${filtered.length !== 1 ? "s" : ""}`;
 
-    if (filtered.length === 0) {
+    if (!filtered.length) {
       grid.innerHTML = "";
       emptyState.classList.remove("hidden");
     } else {
@@ -72,6 +113,7 @@
     });
   }
 
+  // ── Modal ──────────────────────────────────────────────
   function openModal(id) {
     const item = ITEMS.find(i => i.id === id);
     if (!item) return;
@@ -80,20 +122,20 @@
       ? `<div class="modal-img-wrap"><img src="${item.image}" alt="${item.name}" class="modal-img"/></div>`
       : `<div class="modal-img-wrap"><div class="modal-emoji">${item.emoji}</div></div>`;
 
-    const saleLine = item.sale ? `<span class="sale-badge" style="position:static;margin-bottom:0.25rem;">On Sale!</span>` : "";
+    const desc = item.description
+      ? `<p class="modal-desc">${item.description}</p>` : "";
 
     modalContent.innerHTML = `
       ${media}
       <div class="modal-body">
-        ${saleLine}
         <span class="modal-level-badge">Level ${item.level}</span>
         <h2 class="modal-title" id="modal-title">${item.name}</h2>
+        ${desc}
         <div class="modal-actions">
-          <span class="modal-price">💰 ${item.price.toLocaleString()}</span>
+          ${modalPriceHTML(item)}
           <span class="modal-category-tag">${item.category}</span>
         </div>
-      </div>
-    `;
+      </div>`;
 
     modalBackdrop.removeAttribute("hidden");
     document.body.style.overflow = "hidden";
@@ -118,15 +160,14 @@
     grid.innerHTML = `<div class="loading-state">Loading items…</div>`;
     await loadItemsFromSheet();
 
-    if (ITEMS.length === 0) {
-      grid.innerHTML = `<div class="loading-state">⚠️Could not load items. Please try refreshing the page. </div>`;
+    if (!ITEMS.length) {
+      grid.innerHTML = `<div class="loading-state">⚠️ Could not load items. Please try refreshing.</div>`;
       return;
     }
 
     const categories = [...new Set(ITEMS.map(i => i.category))];
     const pillsContainer = document.querySelector(".category-pills");
     pillsContainer.innerHTML = `<button class="pill active" data-category="all">All Items</button>`;
-
     categories.forEach(cat => {
       const btn = document.createElement("button");
       btn.className = "pill";
