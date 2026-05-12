@@ -1,8 +1,9 @@
 {
   "level": 23,
-  "sale": false,
+  "sale": true,
   "name": "Drauger Fang",
   "price": 969,
   "category": "weapon",
-  "image": "images/pexels-3alkan-34610755.jpg"
+  "image": "images/pexels-3alkan-34610755.jpg",
+  "salePrice": 775
 }
