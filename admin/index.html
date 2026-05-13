@@ -236,8 +236,7 @@ if (sessionStorage.getItem("wf_auth")) showAdmin();
 function showAdmin() {
   loginScreen.style.display = "none";
   adminApp.style.display = "block";
-  restoreSettings();
-  loadItems();
+  loadItems(); // restoreSettings() is called inside loadItems after data loads
 }
 
 // ── State (restored from localStorage) ───────────────────
@@ -327,24 +326,41 @@ function refreshComputedPrices() {
 // ── Load items ─────────────────────────────────────────────
 async function loadItems() {
   try {
-    const res      = await fetch(`${RAW}/_data/items/manifest.json`);
-    const manifest = await res.json();
-    const files    = manifest.filter(f => f !== "manifest.json");
+    const bust     = `?t=${Date.now()}`;
+    const manifestRes = await fetch(`${RAW}/_data/items/manifest.json${bust}`);
+    const manifest    = await manifestRes.json();
+    const files       = manifest.filter(f => f && f !== "manifest.json" && f.endsWith(".json"));
 
-    items = await Promise.all(files.map(async filename => {
-      const r    = await fetch(`${RAW}/_data/items/${filename}?t=${Date.now()}`);
+    // Load each file individually — skip failures so one bad file doesn't crash everything
+    const loaded = await Promise.allSettled(files.map(async filename => {
+      const r    = await fetch(`${RAW}/_data/items/${filename}${bust}`);
+      if (!r.ok) throw new Error(`404: ${filename}`);
       const data = await r.json();
-      // Get SHA for saving back
-      const meta = await fetch(`${APIBASE}/_data/items/${filename}`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
-      const metaJson = await meta.json();
+      // Get SHA — needed for saving back to GitHub
+      const meta    = await fetch(`${APIBASE}/_data/items/${filename}`,
+        githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {}
+      );
+      const metaJson = meta.ok ? await meta.json() : {};
       return { filename, sha: metaJson.sha||null, data };
     }));
 
+    // Only keep successful loads
+    items = loaded
+      .filter(r => r.status === "fulfilled")
+      .map(r => r.value);
+
+    const failed = loaded.filter(r => r.status === "rejected");
+    if (failed.length) {
+      console.warn("[Admin] Some items failed to load:", failed.map(r => r.reason));
+    }
+
     renderTable();
     updateCount();
+    // Restore settings AFTER items load so UI reflects saved state
+    restoreSettings();
   } catch(err) {
     document.getElementById("items-body").innerHTML =
-      `<tr><td colspan="9" class="loading" style="color:var(--red)">⚠️ ${err.message}</td></tr>`;
+      `<tr><td colspan="9" class="loading" style="color:var(--red)">⚠️ ${err.message}<br>Check your manifest.json lists only existing files.</td></tr>`;
   }
 }
 
