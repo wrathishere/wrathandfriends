@@ -10,5 +10,5 @@
   "salePricePct": null,
   "globalSaleOn": false,
   "discountPct": 0,
-  "available": false
+  "available": true
 }
