@@ -9,5 +9,6 @@
   "onSale": false,
   "salePricePct": null,
   "globalSaleOn": false,
-  "discountPct": 0
+  "discountPct": 0,
+  "available": false
 }
