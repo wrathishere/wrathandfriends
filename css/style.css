@@ -589,3 +589,51 @@ body {
 .modal-actions .price-original {
   font-size: 0.95rem;
 }
+
+/* ── Tags ─────────────────────────────────────────────────── */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.1rem;
+}
+
+.card-tag {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(180,130,40,0.07);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+/* ── Availability ─────────────────────────────────────────── */
+.unavail-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #888;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.item-card.unavailable {
+  opacity: 0.6;
+}
+
+.item-card.unavailable .card-img {
+  filter: grayscale(60%);
+}
+
+/* ── Larger sale price in modal ───────────────────────────── */
+.price-sale-lg {
+  font-size: 1.2rem !important;
+}
