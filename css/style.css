@@ -3,7 +3,7 @@
    Warm parchment light mode, modern clean fonts
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --bg-page:       #f5efe4;
@@ -21,8 +21,8 @@
   --text-dim:      #b09870;
   --red:           #c0392b;
   --shadow:        rgba(100, 70, 20, 0.12);
-  --font-display:  'Playfair Display', Georgia, serif;
-  --font-body:     'Plus Jakarta Sans', sans-serif;
+  --font-display:  'Open Sans', sans-serif;
+  --font-body:     'Open Sans', sans-serif;
   --radius:        10px;
   --radius-lg:     16px;
   --transition:    0.22s ease;
