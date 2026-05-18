@@ -520,7 +520,7 @@ function attachListeners() {
 document.getElementById("add-btn").addEventListener("click", () => {
   items.push({
     filename: `item-${Date.now()}.json`, sha: null, _new: true,
-    data: { name:"", price:0, category:"other", level:1, onSale:false, salePrice:null, globalSaleOn:false, salePricePct:null, discountPct:0, image:"", description:"" }
+    data: { name:"", price:0, category:"other", level:1, onSale:false, salePrice:null, globalSaleOn:false, salePricePct:null, discountPct:0, image:"", description:"", tags:[], tagGroups:{} }
   });
   renderTable(); updateCount();
   const inputs = document.querySelectorAll("[data-field='name']");
