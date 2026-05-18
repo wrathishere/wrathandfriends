@@ -62,6 +62,7 @@ function normalizeItem(raw, index) {
     image:        raw.image ? `${REPO_RAW}/${raw.image}?t=${_lastFetched}` : null,
     // Tags — array, supports both string "a,b,c" and array ["a","b"]
     tags:         normalizeTags(raw.tags),
+    tagGroups:    normalizeTagGroups(raw),
     // Availability — true by default
     available:    raw.availability !== false && raw.available !== false,
     // Sale fields
@@ -99,4 +100,19 @@ function categoryEmoji(cat) {
     other:     "🎁",
   };
   return map[cat] || "🎁";
+}
+
+
+function normalizeTagGroups(raw) {
+  if (raw.tagGroups && typeof raw.tagGroups === "object") {
+    const out = {};
+    Object.entries(raw.tagGroups).forEach(([k, v]) => { out[k] = normalizeTags(v); });
+    return out;
+  }
+  if (raw.tagsByCategory && typeof raw.tagsByCategory === "object") {
+    const out = {};
+    Object.entries(raw.tagsByCategory).forEach(([k, v]) => { out[k] = normalizeTags(v); });
+    return out;
+  }
+  return { Tags: normalizeTags(raw.tags) };
 }
