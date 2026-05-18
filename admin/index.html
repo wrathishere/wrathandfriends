@@ -108,6 +108,11 @@
     .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:1rem;padding:0.3rem;border-radius:6px;transition:color 0.15s;}
     .del-btn:hover{color:var(--red);}
     .loading{text-align:center;padding:3rem;color:var(--muted);}
+    .tag-admin{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;}
+    .tag-admin-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;align-items:end;}
+    .tag-token-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem;}
+    .tag-token{font-size:.72rem;background:rgba(180,130,40,0.1);border:1px solid var(--border);padding:.2rem .45rem;border-radius:999px;}
+    .tag-pick{max-height:120px;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:.35rem;}
 
     /* Status */
     .status-bar{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;font-size:0.82rem;font-weight:600;padding:0.6rem 1.4rem;border-radius:999px;box-shadow:0 4px 20px rgba(0,0,0,0.25);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;z-index:200;pointer-events:none;}
@@ -167,6 +172,17 @@
       </div>
       <button class="add-btn" id="add-btn">＋ Add New Item</button>
     </div>
+
+    <div class="tag-admin">
+      <div class="section-title" style="font-size:0.95rem;margin-bottom:0.5rem;">Tag Tokens</div>
+      <div class="tag-admin-grid">
+        <input id="tag-cat-input" class="cell-input" placeholder="Tag category (e.g. Profession)"/>
+        <input id="tag-name-input" class="cell-input" placeholder="Tag token (e.g. Manufacturing)"/>
+        <button class="add-btn" id="add-tag-token" type="button">+ Add Tag</button>
+      </div>
+      <div class="tag-token-list" id="tag-token-list"></div>
+    </div>
+
     <div class="table-wrap">
       <table id="items-table">
         <thead>
@@ -245,6 +261,7 @@ let saleMode     = "manual";
 let globalSaleOn = false;
 let discountPct  = 20;
 let githubToken  = lsGet("token", null);
+let tagCatalog   = lsGet("tagCatalog", {});
 
 function restoreSettings() {
   saleMode     = lsGet("saleMode", "manual");
@@ -358,6 +375,7 @@ async function loadItems() {
     updateCount();
     // Restore settings AFTER items load so UI reflects saved state
     restoreSettings();
+    renderTagManager();
   } catch(err) {
     document.getElementById("items-body").innerHTML =
       `<tr><td colspan="9" class="loading" style="color:var(--red)">⚠️ ${err.message}<br>Check your manifest.json lists only existing files.</td></tr>`;
@@ -414,9 +432,10 @@ function renderTable() {
         </div>
       </td>
       <td>
-        <input class="cell-input" style="min-width:100px;" data-index="${i}" data-field="tags"
-          value="${esc((Array.isArray(d.tags)?d.tags.join(', '):(d.tags||'')))}"
-          placeholder="tag1, tag2…"/>
+        <details>
+          <summary style="cursor:pointer;font-size:0.75rem;color:var(--gold);">Assign Tags</summary>
+          <div class="tag-pick">${renderTagPicker(i, d)}</div>
+        </details>
       </td>
       <td style="text-align:center;">
         <label class="mini-toggle" title="Uncheck to hide item from shop">
@@ -463,12 +482,6 @@ function attachListeners() {
     cb.addEventListener("change", () => { items[+cb.dataset.index].data.available = cb.checked; });
   });
 
-  document.querySelectorAll("input[data-field='tags']").forEach(inp => {
-    inp.addEventListener("change", () => {
-      const i = +inp.dataset.index;
-      items[i].data.tags = inp.value.split(",").map(t => t.trim()).filter(Boolean);
-    });
-  });
 
   document.querySelectorAll("input[type='file'][data-index]").forEach(inp => {
     inp.addEventListener("change", () => {
@@ -479,6 +492,16 @@ function attachListeners() {
       items[i].data._imgFile = file;
       items[i].data._imgPath = path;
       showStatus(`📎 "${file.name}" queued — click Save`, "");
+    });
+  });
+
+  document.querySelectorAll("input[data-tagpick]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const i = +cb.dataset.tagpickIndex;
+      const tag = cb.dataset.tagpick;
+      const set = new Set(Array.isArray(items[i].data.tags) ? items[i].data.tags : []);
+      cb.checked ? set.add(tag) : set.delete(tag);
+      items[i].data.tags = [...set];
     });
   });
 
@@ -616,6 +639,38 @@ async function getFileSha(path) {
   if (!r.ok) return null;
   return (await r.json()).sha || null;
 }
+
+
+function renderTagManager() {
+  const list = document.getElementById("tag-token-list");
+  if (!list) return;
+  const entries = Object.entries(tagCatalog);
+  if (!entries.length) { list.innerHTML = '<span style="font-size:.75rem;color:var(--muted);">No tags yet.</span>'; return; }
+  list.innerHTML = entries.flatMap(([cat,tags]) => tags.map(tag => `<span class="tag-token">${esc(cat)}: ${esc(tag)} <button data-delcat="${esc(cat)}" data-deltag="${esc(tag)}" style="border:none;background:none;cursor:pointer;color:var(--red);">✕</button></span>`)).join('');
+  list.querySelectorAll('button[data-delcat]').forEach(btn=>btn.addEventListener('click',()=>{
+    const c=btn.dataset.delcat,t=btn.dataset.deltag;
+    tagCatalog[c]=(tagCatalog[c]||[]).filter(x=>x!==t);
+    if(!tagCatalog[c].length) delete tagCatalog[c];
+    lsSet('tagCatalog',tagCatalog); renderTagManager(); renderTable();
+  }));
+}
+
+function renderTagPicker(index, d) {
+  const selected = new Set(Array.isArray(d.tags) ? d.tags : []);
+  return Object.entries(tagCatalog).map(([cat,tags]) => `<div style="margin-bottom:.35rem;"><div style="font-size:.68rem;font-weight:700;color:var(--muted);">${esc(cat)}</div>${tags.map(tag => `<label style="display:flex;gap:.35rem;font-size:.78rem;"><input type="checkbox" data-tagpick-index="${index}" data-tagpick="${esc(tag)}" ${selected.has(tag)?'checked':''}/> ${esc(tag)}</label>`).join('')}</div>`).join('');
+}
+
+document.getElementById('add-tag-token')?.addEventListener('click',()=>{
+  const cat = document.getElementById('tag-cat-input').value.trim();
+  const tag = document.getElementById('tag-name-input').value.trim();
+  if(!cat||!tag) return;
+  if(!tagCatalog[cat]) tagCatalog[cat]=[];
+  if(!tagCatalog[cat].includes(tag)) tagCatalog[cat].push(tag);
+  lsSet('tagCatalog',tagCatalog);
+  document.getElementById('tag-name-input').value='';
+  renderTagManager();
+  renderTable();
+});
 
 // ── Status bar ─────────────────────────────────────────────
 let stTimer;

@@ -268,11 +268,11 @@
         ${media}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
-          ${tagsHTML}
           <div class="card-footer">
             ${priceHTML(item)}
             <span class="card-category">${escHtml(item.category)}</span>
           </div>
+          ${tagsHTML}
         </div>
       </article>`;
   }
