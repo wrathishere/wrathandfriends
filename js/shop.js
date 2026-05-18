@@ -1,7 +1,6 @@
 // ============================================================
-//  shop.js — Dynamic shop renderer
-//  Reads from ITEMS (loaded by items.js)
-//  Preserves all existing UI, filters, search, card layout
+//  shop.js — Dynamic shop renderer + player helper tools
+//  Preserves existing search/category behavior and card style
 // ============================================================
 
 (function () {
@@ -9,125 +8,261 @@
 
   // ── State ──────────────────────────────────────────────
   let activeCategory = "all";
-  let searchQuery    = "";
-  let refreshTimer   = null;
+  let searchQuery = "";
+  let refreshTimer = null;
+
+  // Tag filter state: Map<groupName, Set<lowerTag>>
+  const activeTagFilters = new Map();
+  const expandedTagGroups = new Set();
+
+  // Smart sort state
+  let recommendationTerms = new Set();
+
+  // Player report state
+  let playerRows = [];
+  let activePlayerRow = null;
+
+  // Optional global set in index.html:
+  // <script>window.PLAYER_SHEET_CSV = "https://docs.google.com/.../pub?output=csv";</script>
+  const PLAYER_SHEET_CSV = window.PLAYER_SHEET_CSV || "";
 
   // ── DOM refs ───────────────────────────────────────────
-  const grid          = document.getElementById("shop-grid");
-  const emptyState    = document.getElementById("empty-state");
-  const itemCount     = document.getElementById("item-count");
-  const searchInput   = document.getElementById("search-input");
+  const grid = document.getElementById("shop-grid");
+  const emptyState = document.getElementById("empty-state");
+  const itemCount = document.getElementById("item-count");
+  const searchInput = document.getElementById("search-input");
+
   const modalBackdrop = document.getElementById("modal-backdrop");
-  const modalContent  = document.getElementById("modal-content");
-  const modalClose    = document.getElementById("modal-close");
+  const modalContent = document.getElementById("modal-content");
+  const modalClose = document.getElementById("modal-close");
+
+  const tagSidebar = document.getElementById("tag-sidebar");
+
+  const playerSelect = document.getElementById("player-select");
+  const playerBtn = document.getElementById("player-report-btn");
+  const clearSortBtn = document.getElementById("clear-smart-sort-btn");
+  const reportBackdrop = document.getElementById("report-backdrop");
+  const reportClose = document.getElementById("report-close");
+  const reportContent = document.getElementById("report-content");
 
   // ── Sale helpers ────────────────────────────────────────
-  // Returns { onSale, salePrice } for an item
-  // Per-item onSale takes priority over globalSaleOn
   function getSaleInfo(item) {
-    if (item.onSale === true &&
-        item.salePrice !== null &&
-        item.salePrice !== "" &&
-        item.salePrice !== undefined) {
+    if (item.onSale === true && item.salePrice !== null && item.salePrice !== "" && item.salePrice !== undefined) {
       return { onSale: true, salePrice: item.salePrice };
     }
-    if (item.globalSaleOn === true &&
-        item.onSale !== true &&
-        item.salePricePct !== null &&
-        item.salePricePct !== undefined) {
+
+    if (item.globalSaleOn === true && item.onSale !== true && item.salePricePct !== null && item.salePricePct !== undefined) {
       return { onSale: true, salePrice: item.salePricePct };
     }
+
     return { onSale: false, salePrice: null };
   }
 
-  // ── Price HTML ─────────────────────────────────────────
   function priceHTML(item, large = false) {
     const { onSale, salePrice } = getSaleInfo(item);
+
     if (onSale) {
       return `
         <div class="price-wrap">
           <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? ' price-sale-lg' : ''}">💰 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-sale${large ? " price-sale-lg" : ""}">💰 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
-    return `<span class="${large ? 'modal-price' : 'card-price'}">💰 ${item.price.toLocaleString()}</span>`;
+
+    return `<span class="${large ? "modal-price" : "card-price"}">💰 ${item.price.toLocaleString()}</span>`;
   }
 
-  // ── Filter logic ────────────────────────────────────────
+  // ── Filtering + sorting ─────────────────────────────────
   function getFilteredItems() {
-    return ITEMS.filter(item => {
-      // Hide unavailable items
+    const filtered = ITEMS.filter(item => {
       if (item.available === false) return false;
 
-      // Category filter
-      const matchCat = activeCategory === "all" || item.category === activeCategory;
+      const matchCategory = activeCategory === "all" || item.category === activeCategory;
 
-      // Search — checks name, description, category, and tags
       const q = searchQuery.toLowerCase();
       const matchSearch = !q ||
         item.name.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q) ||
-        item.tags.some(t => t.toLowerCase().includes(q));
+        item.tags.some(tag => tag.toLowerCase().includes(q));
 
-      return matchCat && matchSearch;
+      const matchTags = matchesTagFilters(item);
+      const matchRecommendation = recommendationTerms.size === 0 || getRecommendationScore(item) > 0;
+
+      return matchCategory && matchSearch && matchTags && matchRecommendation;
     });
+
+    // If smart sort is active, put strongest recommendation matches first.
+    if (recommendationTerms.size > 0) {
+      filtered.sort((a, b) => getRecommendationScore(b) - getRecommendationScore(a));
+    }
+
+    return filtered;
   }
 
-  // ── Build category pills from live data ─────────────────
+  function matchesTagFilters(item) {
+    if (!activeTagFilters.size) return true;
+
+    for (const [groupName, selectedTags] of activeTagFilters.entries()) {
+      const groupTags = (item.tagGroups?.[groupName] || []).map(tag => tag.toLowerCase());
+      const hasAnyTagInGroup = [...selectedTags].some(tag => groupTags.includes(tag));
+      if (!hasAnyTagInGroup) return false;
+    }
+
+    return true;
+  }
+
+  function getRecommendationScore(item) {
+    if (!recommendationTerms.size) return 0;
+
+    const name = item.name.toLowerCase();
+    const tags = item.tags.map(tag => tag.toLowerCase());
+
+    let score = 0;
+    recommendationTerms.forEach(term => {
+      if (!term) return;
+      if (name.includes(term)) score += 3;
+      if (tags.some(tag => tag.includes(term))) score += 2;
+    });
+
+    return score;
+  }
+
+  // ── Category pills ───────────────────────────────────────
   function buildCategoryPills() {
-    const categories    = [...new Set(ITEMS.filter(i => i.available !== false).map(i => i.category))];
+    const categories = [...new Set(ITEMS.filter(i => i.available !== false).map(i => i.category))];
     const pillsContainer = document.querySelector(".category-pills");
 
     pillsContainer.innerHTML = `<button class="pill active" data-category="all">All Items</button>`;
 
-    categories.forEach(cat => {
+    categories.forEach(category => {
       const btn = document.createElement("button");
-      btn.className        = "pill";
-      btn.dataset.category = cat;
-      btn.textContent      = cat.charAt(0).toUpperCase() + cat.slice(1);
+      btn.className = "pill";
+      btn.dataset.category = category;
+      btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+
       btn.addEventListener("click", () => {
         document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
         btn.classList.add("active");
-        activeCategory = cat;
+        activeCategory = category;
         renderGrid();
       });
+
       pillsContainer.appendChild(btn);
     });
 
-    // Restore active category if it still exists, else reset to all
     if (!categories.includes(activeCategory)) activeCategory = "all";
-    document.querySelectorAll(".pill").forEach(p => {
-      p.classList.toggle("active", p.dataset.category === activeCategory);
+
+    document.querySelectorAll(".pill").forEach(pill => {
+      pill.classList.toggle("active", pill.dataset.category === activeCategory);
     });
   }
 
-  // ── Build card HTML ─────────────────────────────────────
+  // ── Tag sidebar ──────────────────────────────────────────
+  function buildTagSidebar() {
+    const tagGroups = collectTagGroupsFromItems();
+
+    if (!tagGroups.length) {
+      tagSidebar.innerHTML = "";
+      return;
+    }
+
+    const sidebarHeader = `
+      <div class="sidebar-head">
+        <h3 class="sidebar-title">Tag Filters</h3>
+        <button class="sidebar-clear" id="clear-tag-filters" type="button">Clear</button>
+      </div>`;
+
+    const groupsHtml = tagGroups.map(group => {
+      const isOpen = expandedTagGroups.has(group.name) || expandedTagGroups.size === 0;
+
+      const tagsHtml = group.tags.map(tag => {
+        const checked = activeTagFilters.get(group.name)?.has(tag.toLowerCase()) ? "checked" : "";
+        return `
+          <label class="tag-option">
+            <input type="checkbox" data-group="${escHtml(group.name)}" data-tag="${escHtml(tag)}" ${checked} />
+            <span>${escHtml(tag)}</span>
+          </label>`;
+      }).join("");
+
+      return `
+        <section class="tag-group ${isOpen ? "open" : ""}">
+          <button class="tag-group-btn" data-group-btn="${escHtml(group.name)}" type="button">
+            ${escHtml(group.name)}
+          </button>
+          <div class="tag-group-options">${tagsHtml}</div>
+        </section>`;
+    }).join("");
+
+    tagSidebar.innerHTML = sidebarHeader + groupsHtml;
+
+    const clearBtn = document.getElementById("clear-tag-filters");
+    clearBtn.addEventListener("click", () => {
+      activeTagFilters.clear();
+      renderGrid();
+      buildTagSidebar();
+    });
+
+    tagSidebar.querySelectorAll("[data-group-btn]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const section = btn.closest(".tag-group");
+        section.classList.toggle("open");
+
+        const group = btn.dataset.groupBtn;
+        if (section.classList.contains("open")) expandedTagGroups.add(group);
+        else expandedTagGroups.delete(group);
+      });
+    });
+
+    tagSidebar.querySelectorAll("input[type='checkbox'][data-group]").forEach(checkbox => {
+      checkbox.addEventListener("change", () => {
+        const group = checkbox.dataset.group;
+        const tag = checkbox.dataset.tag.toLowerCase();
+
+        if (!activeTagFilters.has(group)) activeTagFilters.set(group, new Set());
+
+        if (checkbox.checked) activeTagFilters.get(group).add(tag);
+        else activeTagFilters.get(group).delete(tag);
+
+        if (activeTagFilters.get(group).size === 0) activeTagFilters.delete(group);
+
+        renderGrid();
+      });
+    });
+  }
+
+  function collectTagGroupsFromItems() {
+    const groups = new Map();
+
+    ITEMS.forEach(item => {
+      const source = item.tagGroups || { Tags: item.tags || [] };
+      Object.entries(source).forEach(([groupName, tags]) => {
+        if (!groups.has(groupName)) groups.set(groupName, new Set());
+        (tags || []).forEach(tag => groups.get(groupName).add(tag));
+      });
+    });
+
+    return [...groups.entries()]
+      .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // ── Card rendering ───────────────────────────────────────
   function buildCard(item) {
     const { onSale } = getSaleInfo(item);
+    const recommendationScore = getRecommendationScore(item);
 
-    // Image or emoji fallback
     const media = item.image
-      ? `<div class="card-img-wrap">
-           <img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy"
-                onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>
-         </div>`
+      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-emoji\\'>${item.emoji}</div>'"/></div>`
       : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
 
-    // Tags HTML (shown as small pills)
     const tagsHTML = item.tags.length
-      ? `<div class="card-tags">${item.tags.map(t =>
-          `<span class="card-tag">${escHtml(t)}</span>`).join("")}</div>`
+      ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
       : "";
 
     return `
-      <article
-        class="item-card${onSale ? " on-sale" : ""}"
-        data-id="${item.id}"
-        tabindex="0"
-        role="button"
-        aria-label="View details for ${escHtml(item.name)}"
-      >
+      <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
+        data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         <div class="card-badge">Lv. ${item.level}</div>
         ${media}
@@ -142,40 +277,41 @@
       </article>`;
   }
 
-  // ── Render grid ─────────────────────────────────────────
   function renderGrid() {
     const filtered = getFilteredItems();
     itemCount.textContent = `${filtered.length} item${filtered.length !== 1 ? "s" : ""}`;
 
-    if (filtered.length === 0) {
+    if (!filtered.length) {
       grid.innerHTML = "";
       emptyState.classList.remove("hidden");
-    } else {
-      emptyState.classList.add("hidden");
-      grid.innerHTML = filtered.map(buildCard).join("");
-
-      // Stagger animation
-      grid.querySelectorAll(".item-card").forEach((card, i) => {
-        card.style.animationDelay = `${i * 50}ms`;
-        card.classList.add("card-enter");
-      });
-
-      attachCardListeners();
+      return;
     }
+
+    emptyState.classList.add("hidden");
+    grid.innerHTML = filtered.map(buildCard).join("");
+
+    grid.querySelectorAll(".item-card").forEach((card, index) => {
+      card.style.animationDelay = `${index * 40}ms`;
+      card.classList.add("card-enter");
+    });
+
+    attachCardListeners();
   }
 
-  // ── Card click listeners ────────────────────────────────
   function attachCardListeners() {
     grid.querySelectorAll(".item-card").forEach(card => {
       const id = parseInt(card.dataset.id, 10);
-      card.addEventListener("click",   () => openModal(id));
-      card.addEventListener("keydown", e => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(id); }
+      card.addEventListener("click", () => openModal(id));
+      card.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openModal(id);
+        }
       });
     });
   }
 
-  // ── Modal ───────────────────────────────────────────────
+  // ── Item modal ───────────────────────────────────────────
   function openModal(id) {
     const item = ITEMS.find(i => i.id === id);
     if (!item) return;
@@ -183,27 +319,18 @@
     const { onSale } = getSaleInfo(item);
 
     const media = item.image
-      ? `<div class="modal-img-wrap">
-           <img src="${item.image}" alt="${escHtml(item.name)}" class="modal-img"
-                onerror="this.parentElement.innerHTML='<div class=\'modal-emoji\'>${item.emoji}</div>'"/>
-         </div>`
+      ? `<div class="modal-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="modal-img" onerror="this.parentElement.innerHTML='<div class=\\'modal-emoji\\'>${item.emoji}</div>'"/></div>`
       : `<div class="modal-img-wrap"><div class="modal-emoji">${item.emoji}</div></div>`;
 
-    const desc = item.description
-      ? `<p class="modal-desc">${escHtml(item.description)}</p>` : "";
+    const desc = item.description ? `<p class="modal-desc">${escHtml(item.description)}</p>` : "";
 
     const tagsHTML = item.tags.length
-      ? `<div class="card-tags" style="margin-top:0.5rem">${item.tags.map(t =>
-          `<span class="card-tag">${escHtml(t)}</span>`).join("")}</div>`
+      ? `<div class="card-tags" style="margin-top:0.5rem">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
       : "";
-
-    const availBadge = item.available === false
-      ? `<span class="unavail-badge">Out of Stock</span>` : "";
 
     modalContent.innerHTML = `
       ${media}
       <div class="modal-body">
-        ${availBadge}
         <span class="modal-level-badge">Level ${item.level}</span>
         <h2 class="modal-title" id="modal-title">${escHtml(item.name)}</h2>
         ${desc}
@@ -225,54 +352,212 @@
     document.body.style.overflow = "";
   }
 
-  // ── Search ──────────────────────────────────────────────
-  searchInput.addEventListener("input", e => {
-    searchQuery = e.target.value.trim().toLowerCase();
-    renderGrid();
-  });
+  // ── Player report ────────────────────────────────────────
+  async function loadPlayerReportRows() {
+    if (!PLAYER_SHEET_CSV) return;
 
-  // ── Modal events ────────────────────────────────────────
-  modalClose.addEventListener("click", closeModal);
-  modalBackdrop.addEventListener("click", e => { if (e.target === modalBackdrop) closeModal(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+    try {
+      const response = await fetch(PLAYER_SHEET_CSV);
+      const csvText = await response.text();
+      const rows = parseCSV(csvText);
 
-  // ── Auto-refresh ────────────────────────────────────────
-  // Re-fetches data periodically so updates appear quickly after commits
-  // Skips if modal is open to avoid disrupting the user
-  function scheduleRefresh() {
-    refreshTimer = setInterval(async () => {
-      if (!modalBackdrop.hasAttribute("hidden")) return; // don't refresh while modal open
-      await loadItemsFromSheet(true); // force = true bypasses the cache check
-      buildCategoryPills();
-      renderGrid();
-    }, CACHE_TIME);
+      playerRows = rows.filter(row => row["Player Name"]);
+      playerSelect.innerHTML = `<option value="">Select player...</option>` +
+        playerRows.map(row => `<option>${escHtml(row["Player Name"])}</option>`).join("");
+    } catch (error) {
+      console.warn("[Player Report] Failed to load CSV:", error);
+    }
   }
 
-  // ── Init ────────────────────────────────────────────────
-  async function init() {
-    grid.innerHTML = `<div class="loading-state">Loading items…</div>`;
+  function openPlayerReport() {
+    const selectedName = playerSelect.value;
+    if (!selectedName) return;
 
-    await loadItemsFromSheet();
+    const row = playerRows.find(r => r["Player Name"] === selectedName);
+    if (!row) return;
 
-    if (ITEMS.length === 0) {
-      grid.innerHTML = `<div class="loading-state">⚠️ Could not load items. Please refresh the page.</div>`;
-      return;
+    activePlayerRow = row;
+
+    const manufacturing = splitRecommendationList(row["Manufacturing Buy Suggestion"]);
+    const retail = splitRecommendationList(row["Retail Buy Suggestion"]);
+    const wholesale = splitRecommendationList(row["Wholesale Buy Suggestion"]);
+
+    reportContent.innerHTML = `
+      <h2>PLAYER REPORT — ${escHtml(selectedName)}</h2>
+      <p><strong>Missing Manufacturing:</strong> ${escHtml(row["Missing Manufacturing"] || "0")}</p>
+      <p><strong>Missing Retail:</strong> ${escHtml(row["Missing Retail"] || "0")}</p>
+      <p><strong>Missing Wholesale:</strong> ${escHtml(row["Missing Wholesale"] || "0")}</p>
+      <p><strong>Total Missing:</strong> ${escHtml(row["Missing Total"] || "0")}</p>
+      <hr />
+      <h3>Recommended Manufacturing Purchases</h3>
+      ${listHTML(manufacturing)}
+      <h3>Recommended Retail Purchases</h3>
+      ${listHTML(retail)}
+      <h3>Recommended Wholesale Purchases</h3>
+      ${listHTML(wholesale)}
+      <button id="sort-shop-btn" class="sort-shop-btn" type="button">Sort Shop For Me</button>`;
+
+    reportBackdrop.removeAttribute("hidden");
+
+    const sortBtn = reportContent.querySelector("#sort-shop-btn");
+    sortBtn.addEventListener("click", applyRecommendationFilter);
+  }
+
+  function applyRecommendationFilter() {
+    if (!activePlayerRow) return;
+
+    const allTerms = [
+      "Manufacturing Buy Suggestion",
+      "Retail Buy Suggestion",
+      "Wholesale Buy Suggestion"
+    ].flatMap(key => splitRecommendationList(activePlayerRow[key]));
+
+    recommendationTerms = new Set(allTerms.map(term => term.toLowerCase()));
+    renderGrid();
+    closeReport();
+
+    if (clearSortBtn) clearSortBtn.classList.remove("hidden");
+  }
+
+  function clearRecommendationFilter() {
+    recommendationTerms = new Set();
+    renderGrid();
+
+    if (clearSortBtn) clearSortBtn.classList.add("hidden");
+  }
+
+  function closeReport() {
+    reportBackdrop.setAttribute("hidden", "");
+  }
+
+  function splitRecommendationList(value) {
+    if (!value) return [];
+    return String(value)
+      .split(/[\n,|]/)
+      .map(v => v.trim())
+      .filter(Boolean);
+  }
+
+  // Handles quoted commas in CSV rows.
+  function parseCSV(csvText) {
+    const rows = [];
+    let row = [];
+    let value = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < csvText.length; i += 1) {
+      const char = csvText[i];
+      const next = csvText[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && next === '"') {
+          value += '"';
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === "," && !inQuotes) {
+        row.push(value);
+        value = "";
+      } else if ((char === "\n" || char === "\r") && !inQuotes) {
+        if (char === "\r" && next === "\n") i += 1;
+        row.push(value);
+        rows.push(row);
+        row = [];
+        value = "";
+      } else {
+        value += char;
+      }
     }
 
-    buildCategoryPills();
-    renderGrid();
-    scheduleRefresh(); // start auto-refresh
+    if (value.length || row.length) {
+      row.push(value);
+      rows.push(row);
+    }
+
+    if (!rows.length) return [];
+
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1)
+      .filter(r => r.some(cell => String(cell).trim() !== ""))
+      .map(r => {
+        const obj = {};
+        headers.forEach((header, idx) => {
+          obj[header] = (r[idx] || "").trim();
+        });
+        return obj;
+      });
   }
 
-  init();
+  function listHTML(items) {
+    if (!items.length) return "<p>None</p>";
+    return `<ul>${items.map(item => `<li>${escHtml(item)}</li>`).join("")}</ul>`;
+  }
 
-  // ── Helpers ─────────────────────────────────────────────
-  function escHtml(str) {
-    return String(str)
+  function escHtml(value) {
+    return String(value)
       .replace(/&/g, "&amp;")
       .replace(/"/g, "&quot;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
   }
 
+  // ── Events ───────────────────────────────────────────────
+  searchInput.addEventListener("input", event => {
+    searchQuery = event.target.value.trim().toLowerCase();
+    renderGrid();
+  });
+
+  modalClose.addEventListener("click", closeModal);
+  modalBackdrop.addEventListener("click", event => {
+    if (event.target === modalBackdrop) closeModal();
+  });
+
+  reportClose.addEventListener("click", closeReport);
+  reportBackdrop.addEventListener("click", event => {
+    if (event.target === reportBackdrop) closeReport();
+  });
+
+  playerBtn.addEventListener("click", openPlayerReport);
+
+  if (clearSortBtn) {
+    clearSortBtn.addEventListener("click", clearRecommendationFilter);
+  }
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    closeModal();
+    closeReport();
+  });
+
+  // ── Auto-refresh ─────────────────────────────────────────
+  function scheduleRefresh() {
+    refreshTimer = setInterval(async () => {
+      if (!modalBackdrop.hasAttribute("hidden")) return;
+
+      await loadItemsFromSheet(true);
+      buildCategoryPills();
+      buildTagSidebar();
+      renderGrid();
+    }, CACHE_TIME);
+  }
+
+  // ── Init ─────────────────────────────────────────────────
+  async function init() {
+    grid.innerHTML = `<div class="loading-state">Loading items…</div>`;
+
+    await Promise.all([loadItemsFromSheet(), loadPlayerReportRows()]);
+
+    if (!ITEMS.length) {
+      grid.innerHTML = `<div class="loading-state">⚠️ Could not load items. Please refresh the page.</div>`;
+      return;
+    }
+
+    buildCategoryPills();
+    buildTagSidebar();
+    renderGrid();
+    scheduleRefresh();
+  }
+
+  init();
 })();
