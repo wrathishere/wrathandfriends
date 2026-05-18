@@ -21,6 +21,13 @@
           <p class="shop-tagline">For Friends by the friends</p>
         </div>
       </div>
+      <div class="player-report-controls">
+        <select id="player-select" class="player-select" aria-label="Select player">
+          <option value="">Select player...</option>
+        </select>
+        <button id="player-report-btn" class="player-report-btn">Open Report</button>
+        <button id="clear-smart-sort-btn" class="player-report-btn hidden" type="button">Clear Smart Sort</button>
+      </div>
     </div>
   </header>
 
@@ -49,8 +56,10 @@
   </div>
 
   <!-- Item Grid -->
-  <main class="shop-grid" id="shop-grid" aria-label="Shop items">
-  </main>
+  <div class="shop-layout">
+    <aside class="tag-sidebar" id="tag-sidebar" aria-label="Tag filters"></aside>
+    <main class="shop-grid" id="shop-grid" aria-label="Shop items"></main>
+  </div>
 
   <!-- Empty state -->
   <div class="empty-state hidden" id="empty-state">
@@ -63,6 +72,14 @@
     <div class="modal-card">
       <button class="modal-close" id="modal-close" aria-label="Close item detail">✕</button>
       <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+
+
+  <div class="report-backdrop" id="report-backdrop" hidden>
+    <div class="report-modal">
+      <button id="report-close" class="modal-close" aria-label="Close report">✕</button>
+      <div id="report-content"></div>
     </div>
   </div>
 
