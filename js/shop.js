@@ -235,7 +235,7 @@
     const groups = new Map();
 
     ITEMS.forEach(item => {
-      const source = item.tagGroups || {};
+      const source = item.tagGroups || { Tags: item.tags || [] };
       Object.entries(source).forEach(([groupName, tags]) => {
         if (!groups.has(groupName)) groups.set(groupName, new Set());
         (tags || []).forEach(tag => groups.get(groupName).add(tag));
@@ -413,38 +413,14 @@
     ].flatMap(key => splitRecommendationList(activePlayerRow[key]));
 
     recommendationTerms = new Set(allTerms.map(term => term.toLowerCase()));
-    applySuggestedTagsFromRecommendations(allTerms);
     renderGrid();
     closeReport();
 
     if (clearSortBtn) clearSortBtn.classList.remove("hidden");
   }
 
-
-  function applySuggestedTagsFromRecommendations(terms) {
-    activeTagFilters.clear();
-    const normalizedTerms = terms.map(t => t.toLowerCase());
-
-    ITEMS.forEach(item => {
-      const groups = item.tagGroups || {};
-      Object.entries(groups).forEach(([groupName, tags]) => {
-        (tags || []).forEach(tag => {
-          const tagLower = String(tag).toLowerCase();
-          const matches = normalizedTerms.some(term => term && (tagLower.includes(term) || term.includes(tagLower)));
-          if (!matches) return;
-          if (!activeTagFilters.has(groupName)) activeTagFilters.set(groupName, new Set());
-          activeTagFilters.get(groupName).add(tagLower);
-        });
-      });
-    });
-
-    buildTagSidebar();
-  }
-
   function clearRecommendationFilter() {
     recommendationTerms = new Set();
-    activeTagFilters.clear();
-    buildTagSidebar();
     renderGrid();
 
     if (clearSortBtn) clearSortBtn.classList.add("hidden");

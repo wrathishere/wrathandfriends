@@ -10,5 +10,10 @@
   "salePricePct": null,
   "globalSaleOn": false,
   "discountPct": 0,
-  "available": true
+  "available": true,
+  "tags": [
+    "Weapon",
+    "Fickle Thistle",
+    "Yagluth"
+  ]
 }

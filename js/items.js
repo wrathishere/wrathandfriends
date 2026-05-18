@@ -114,5 +114,5 @@ function normalizeTagGroups(raw) {
     Object.entries(raw.tagsByCategory).forEach(([k, v]) => { out[k] = normalizeTags(v); });
     return out;
   }
-  return {};
+  return { Tags: normalizeTags(raw.tags) };
 }

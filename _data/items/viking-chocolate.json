@@ -12,5 +12,9 @@
   "globalSaleOn": false,
   "discountPct": 0,
   "onSale": false,
-  "available": true
+  "available": true,
+  "tags": [
+    "Bait N Fish",
+    "Eikthyr"
+  ]
 }

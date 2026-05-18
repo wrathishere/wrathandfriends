@@ -498,19 +498,10 @@ function attachListeners() {
   document.querySelectorAll("input[data-tagpick]").forEach(cb => {
     cb.addEventListener("change", () => {
       const i = +cb.dataset.tagpickIndex;
-      const cat = cb.dataset.tagpickCat;
       const tag = cb.dataset.tagpick;
-      const d = items[i].data;
-
-      if (!d.tagGroups || typeof d.tagGroups !== "object") d.tagGroups = {};
-
-      const set = new Set(Array.isArray(d.tagGroups[cat]) ? d.tagGroups[cat] : []);
+      const set = new Set(Array.isArray(items[i].data.tags) ? items[i].data.tags : []);
       cb.checked ? set.add(tag) : set.delete(tag);
-
-      if (set.size) d.tagGroups[cat] = [...set];
-      else delete d.tagGroups[cat];
-
-      d.tags = Object.values(d.tagGroups).flat();
+      items[i].data.tags = [...set];
     });
   });
 
@@ -665,18 +656,8 @@ function renderTagManager() {
 }
 
 function renderTagPicker(index, d) {
-  const groups = d.tagGroups && typeof d.tagGroups === "object" ? d.tagGroups : {};
-
-  return Object.entries(tagCatalog).map(([cat, tags]) => {
-    const selected = new Set(Array.isArray(groups[cat]) ? groups[cat] : []);
-
-    const options = tags.map(tag => {
-      return `<label style="display:flex;gap:.35rem;font-size:.78rem;"><input type="checkbox" data-tagpick-index="${index}" data-tagpick-cat="${esc(cat)}" data-tagpick="${esc(tag)}" ${selected.has(tag) ? 'checked' : ''}/> ${esc(tag)}</label>`;
-    }).join('');
-
-    return `<div style="margin-bottom:.35rem;"><div style="font-size:.68rem;font-weight:700;color:var(--muted);">${esc(cat)}</div>${options}</div>`;
-  }).join('');
-}
+  const selected = new Set(Array.isArray(d.tags) ? d.tags : []);
+  return Object.entries(tagCatalog).map(([cat,tags]) => `<div style="margin-bottom:.35rem;"><div style="font-size:.68rem;font-weight:700;color:var(--muted);">${esc(cat)}</div>${tags.map(tag => `<label style="display:flex;gap:.35rem;font-size:.78rem;"><input type="checkbox" data-tagpick-index="${index}" data-tagpick="${esc(tag)}" ${selected.has(tag)?'checked':''}/> ${esc(tag)}</label>`).join('')}</div>`).join('');
 }
 
 document.getElementById('add-tag-token')?.addEventListener('click',()=>{
