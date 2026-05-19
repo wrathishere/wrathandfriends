@@ -1,0 +1,15 @@
+{
+  "name": "Tar",
+  "price": 250,
+  "category": "other",
+  "level": 0,
+  "onSale": false,
+  "salePrice": 180,
+  "globalSaleOn": false,
+  "salePricePct": null,
+  "discountPct": 0,
+  "image": "images/sampleitem.png",
+  "description": "",
+  "tags": [],
+  "tagGroups": {}
+}
