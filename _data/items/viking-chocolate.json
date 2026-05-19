@@ -1,19 +1,19 @@
 {
-  "level": 50,
-  "sale": true,
   "name": "Viking Chocolatier",
   "price": 90,
   "category": "accessory",
+  "level": 50,
   "image": "images/pexels-vie-studio-6167330.jpg",
   "description": "it's a viking chocolate",
-  "saleOverride": false,
+  "onSale": false,
   "salePrice": 72,
   "salePricePct": null,
   "globalSaleOn": false,
   "discountPct": 0,
-  "onSale": false,
   "available": true,
-  "tags": ["Eikthyr",
-    "Bait N Fish"]
-  "tagGroups": { "Token": ["Bait N Fish"], "Boss Kill": ["Eikthyr"] } 
+  "tags": ["Bait N Fish", "Eikthyr"],
+  "tagGroups": {
+    "Token": ["Bait N Fish"],
+    "Boss Kill": ["Eikthyr"]
+  }
 }
