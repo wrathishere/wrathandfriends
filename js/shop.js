@@ -279,7 +279,6 @@ function collectTagGroupsFromItems() {
           <h2 class="card-name">${escHtml(item.name)}</h2>
           <div class="card-footer">
             ${priceHTML(item)}
-            <span class="card-category">${escHtml(item.category)}</span>
           </div>
           ${tagsHTML}
         </div>
