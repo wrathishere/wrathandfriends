@@ -432,9 +432,7 @@ async function loadImageRegistry() {
 }
 function buildImageOptions(selected="") {
   const opts = ['<option value="">Select image...</option>'];
-  const pendingNames = [...pendingUploads.keys()];
-  const allNames = [...new Set([...imageRegistry, ...pendingNames])].sort();
-  allNames.forEach(name => opts.push(`<option value="images/${name}" ${selected===`images/${name}`?"selected":""}>${esc(name)}</option>`));
+  imageRegistry.forEach(name => opts.push(`<option value="images/${name}" ${selected===`images/${name}`?"selected":""}>${esc(name)}</option>`));
   return opts.join("");
 }
 function renderMediaGrid() {
@@ -629,7 +627,6 @@ document.getElementById("save-btn").addEventListener("click", async () => {
       pendingUploads.clear();
       await loadImageRegistry();
       renderMediaGrid();
-      renderTable();
     }
 
     // Save each item JSON
@@ -790,7 +787,6 @@ document.getElementById("media-grid")?.addEventListener("click", async (e) => {
 function queueUploads(fileList) {
   const files = Array.from(fileList||[]).filter(isValidImageFile);
   files.forEach(file => { const clean = sanitizeFilename(file.name); if (!pendingUploads.has(clean)) pendingUploads.set(clean, new File([file], clean, {type:file.type})); });
-  renderTable();
   showStatus(`📦 ${pendingUploads.size} image(s) queued for Save`, "");
 }
 
