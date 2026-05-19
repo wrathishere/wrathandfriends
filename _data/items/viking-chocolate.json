@@ -1,7 +1,7 @@
 {
   "name": "Viking Chocolatier",
   "price": 90,
-  "category": "accessory",
+  "category": "armor",
   "level": 50,
   "image": "images/pexels-vie-studio-6167330.jpg",
   "description": "it's a viking chocolate",
@@ -11,9 +11,16 @@
   "globalSaleOn": false,
   "discountPct": 0,
   "available": true,
-  "tags": ["Bait N Fish", "Eikthyr"],
+  "tags": [
+    "Bait N Fish",
+    "Eikthyr"
+  ],
   "tagGroups": {
-    "Token": ["Bait N Fish"],
-    "Boss Kill": ["Eikthyr"]
+    "Token": [
+      "Bait N Fish"
+    ],
+    "Boss Kill": [
+      "Eikthyr"
+    ]
   }
 }
