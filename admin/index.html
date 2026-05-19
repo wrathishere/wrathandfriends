@@ -402,6 +402,7 @@ async function loadItems() {
       console.warn("[Admin] Some items failed to load:", failed.map(r => r.reason));
     }
 
+    await loadImageRegistry();
     renderTable();
     updateCount();
     // Restore settings AFTER items load so UI reflects saved state
