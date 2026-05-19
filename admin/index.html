@@ -495,15 +495,30 @@ function attachListeners() {
     });
   });
 
-  document.querySelectorAll("input[data-tagpick]").forEach(cb => {
-    cb.addEventListener("change", () => {
-      const i = +cb.dataset.tagpickIndex;
-      const tag = cb.dataset.tagpick;
-      const set = new Set(Array.isArray(items[i].data.tags) ? items[i].data.tags : []);
-      cb.checked ? set.add(tag) : set.delete(tag);
-      items[i].data.tags = [...set];
-    });
+ document.querySelectorAll("input[data-tagpick]").forEach(cb => {
+  cb.addEventListener("change", () => {
+    const i   = +cb.dataset.tagpickIndex;
+    const tag = cb.dataset.tagpick;
+    const cat = cb.dataset.tagpickCat; // ← we'll add this below
+
+    // Update flat tags array
+    const set = new Set(Array.isArray(items[i].data.tags) ? items[i].data.tags : []);
+    cb.checked ? set.add(tag) : set.delete(tag);
+    items[i].data.tags = [...set];
+
+    // Update tagGroups object so frontend can group by category
+    if (!items[i].data.tagGroups) items[i].data.tagGroups = {};
+    if (!items[i].data.tagGroups[cat]) items[i].data.tagGroups[cat] = [];
+    if (cb.checked) {
+      if (!items[i].data.tagGroups[cat].includes(tag))
+        items[i].data.tagGroups[cat].push(tag);
+    } else {
+      items[i].data.tagGroups[cat] = items[i].data.tagGroups[cat].filter(t => t !== tag);
+      if (!items[i].data.tagGroups[cat].length)
+        delete items[i].data.tagGroups[cat];
+    }
   });
+});
 
   document.querySelectorAll(".del-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -654,12 +669,22 @@ function renderTagManager() {
     lsSet('tagCatalog',tagCatalog); renderTagManager(); renderTable();
   }));
 }
-
 function renderTagPicker(index, d) {
   const selected = new Set(Array.isArray(d.tags) ? d.tags : []);
-  return Object.entries(tagCatalog).map(([cat,tags]) => `<div style="margin-bottom:.35rem;"><div style="font-size:.68rem;font-weight:700;color:var(--muted);">${esc(cat)}</div>${tags.map(tag => `<label style="display:flex;gap:.35rem;font-size:.78rem;"><input type="checkbox" data-tagpick-index="${index}" data-tagpick="${esc(tag)}" ${selected.has(tag)?'checked':''}/> ${esc(tag)}</label>`).join('')}</div>`).join('');
+  return Object.entries(tagCatalog).map(([cat, tags]) => `
+    <div style="margin-bottom:.35rem;">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);">${esc(cat)}</div>
+      ${tags.map(tag => `
+        <label style="display:flex;gap:.35rem;font-size:.78rem;">
+          <input type="checkbox"
+            data-tagpick-index="${index}"
+            data-tagpick="${esc(tag)}"
+            data-tagpick-cat="${esc(cat)}"
+            ${selected.has(tag) ? 'checked' : ''}/>
+          ${esc(tag)}
+        </label>`).join('')}
+    </div>`).join('');
 }
-
 document.getElementById('add-tag-token')?.addEventListener('click',()=>{
   const cat = document.getElementById('tag-cat-input').value.trim();
   const tag = document.getElementById('tag-name-input').value.trim();
