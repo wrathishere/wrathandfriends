@@ -237,7 +237,8 @@ body {
 /* ── Card image area — top 65% of the square ─────────────── */
 .card-img-wrap {
   width: 100%;
-  flex: 1 1 0;
+  height: 180px;        /* fixed — change to any value you like */
+  flex-shrink: 0;       /* prevents it from shrinking */
   overflow: hidden;
   background: #f0e8d8;
   display: flex;
