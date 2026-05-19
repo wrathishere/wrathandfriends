@@ -291,7 +291,7 @@ let globalSaleOn = false;
 let discountPct  = 20;
 let githubToken  = lsGet("token", null);
 let tagCatalog   = lsGet("tagCatalog", {});
-let imageRegistry = lsGet("imageRegistryCache", []);
+let imageRegistry = [];
 let pendingUploads = new Map();
 
 function restoreSettings() {
@@ -408,6 +408,7 @@ async function loadItems() {
     // Restore settings AFTER items load so UI reflects saved state
     restoreSettings();
     renderTagManager();
+    await loadImageRegistry();
     renderMediaGrid();
   } catch(err) {
     document.getElementById("items-body").innerHTML =
@@ -425,24 +426,14 @@ function isValidImageFile(file) {
 async function loadImageRegistry() {
   try {
     const res = await fetch(`${APIBASE}/images`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
-    if (!res.ok) throw new Error("Image registry request failed");
+    if (!res.ok) return;
     const list = await res.json();
     imageRegistry = (Array.isArray(list)?list:[]).filter(f=>f.type==="file" && /\.(jpg|jpeg|png|webp)$/i.test(f.name)).map(f=>f.name).sort();
-    lsSet("imageRegistryCache", imageRegistry);
-    console.log("Image Registry:", imageRegistry);
-  } catch (e) {
-    // Fallback: keep cached registry to prevent empty selectors after refresh.
-    imageRegistry = lsGet("imageRegistryCache", imageRegistry || []);
-    console.log("Image Registry:", imageRegistry);
-    console.warn("Image registry failed", e);
-  }
+  } catch (e) { console.warn("Image registry failed", e); }
 }
 function buildImageOptions(selected="") {
-  console.log("Image Registry:", imageRegistry);
   const opts = ['<option value="">Select image...</option>'];
-  const pendingNames = [...pendingUploads.keys()];
-  const allNames = [...new Set([...imageRegistry, ...pendingNames])].sort();
-  allNames.forEach(name => opts.push(`<option value="images/${name}" ${selected===`images/${name}`?"selected":""}>${esc(name)}</option>`));
+  imageRegistry.forEach(name => opts.push(`<option value="images/${name}" ${selected===`images/${name}`?"selected":""}>${esc(name)}</option>`));
   return opts.join("");
 }
 function renderMediaGrid() {
@@ -630,19 +621,13 @@ document.getElementById("save-btn").addEventListener("click", async () => {
 
     }
 
-    const totalUploads = pendingUploads.size;
-    let uploaded = 0;
     for (const [name, file] of pendingUploads.entries()) {
-      showStatus(`📤 Uploading image ${uploaded + 1}/${totalUploads}: ${name}`, "");
       await uploadImage(file, `images/${name}`);
-      uploaded++;
     }
     if (pendingUploads.size) {
       pendingUploads.clear();
       await loadImageRegistry();
       renderMediaGrid();
-      renderTable();
-      showStatus(`✅ Uploaded ${uploaded} image(s)`, "success");
     }
 
     // Save each item JSON
@@ -803,7 +788,6 @@ document.getElementById("media-grid")?.addEventListener("click", async (e) => {
 function queueUploads(fileList) {
   const files = Array.from(fileList||[]).filter(isValidImageFile);
   files.forEach(file => { const clean = sanitizeFilename(file.name); if (!pendingUploads.has(clean)) pendingUploads.set(clean, new File([file], clean, {type:file.type})); });
-  renderTable();
   showStatus(`📦 ${pendingUploads.size} image(s) queued for Save`, "");
 }
 
