@@ -524,6 +524,8 @@ function attachListeners() {
       const i = +el.dataset.index, f = el.dataset.field;
       items[i].data[f] = (f==="price"||f==="salePrice"||f==="level") ? (parseFloat(el.value)||0) : el.value;
       if (f==="price") refreshComputedPrices();
+      // Keep image preview in sync when a different library file is selected.
+      if (f==="image") renderTable();
     });
   });
 
