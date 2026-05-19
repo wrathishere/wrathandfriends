@@ -11,7 +11,8 @@
   "globalSaleOn": false,
   "discountPct": 0,
   "available": true,
-  "tags": ["Fickle Thistle",
+  "tags": [
+    "Fickle Thistle",
     "Yagluth"
   ]
 }
