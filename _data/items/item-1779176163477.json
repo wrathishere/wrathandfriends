@@ -1,7 +1,7 @@
 {
   "name": "Tar",
   "price": 250,
-  "category": "other",
+  "category": "bulk",
   "level": 0,
   "onSale": false,
   "salePrice": 180,
@@ -14,5 +14,12 @@
     "Tarrific",
     "Moder"
   ],
-  "tagGroups": { "Token": ["Tarrific"], "Boss Kill": ["Moder"] }
+  "tagGroups": {
+    "Token": [
+      "Tarrific"
+    ],
+    "Boss Kill": [
+      "Moder"
+    ]
+  }
 }
