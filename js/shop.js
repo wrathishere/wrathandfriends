@@ -231,21 +231,30 @@
     });
   }
 
-  function collectTagGroupsFromItems() {
-    const groups = new Map();
+function collectTagGroupsFromItems() {
+  const groups = new Map();
 
-    ITEMS.forEach(item => {
-      const source = item.tagGroups || { Tags: item.tags || [] };
-      Object.entries(source).forEach(([groupName, tags]) => {
+  ITEMS.forEach(item => {
+    // Use tagGroups if it exists AND has keys, otherwise fall back to flat tags
+    const hasTagGroups = item.tagGroups && Object.keys(item.tagGroups).length > 0;
+
+    if (hasTagGroups) {
+      Object.entries(item.tagGroups).forEach(([groupName, tags]) => {
         if (!groups.has(groupName)) groups.set(groupName, new Set());
         (tags || []).forEach(tag => groups.get(groupName).add(tag));
       });
-    });
+    } else {
+      // Flat tags with no category — put under "Tags"
+      const flatTags = item.tags || [];
+      if (!groups.has("Tags")) groups.set("Tags", new Set());
+      flatTags.forEach(tag => groups.get("Tags").add(tag));
+    }
+  });
 
-    return [...groups.entries()]
-      .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
+  return [...groups.entries()]
+    .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
 
   // ── Card rendering ───────────────────────────────────────
   function buildCard(item) {
