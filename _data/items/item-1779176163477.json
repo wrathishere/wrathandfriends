@@ -10,6 +10,9 @@
   "discountPct": 0,
   "image": "images/sampleitem.png",
   "description": "",
-  "tags": [],
+  "tags": [
+    "Tarrific",
+    "Moder"
+  ],
   "tagGroups": {}
 }
