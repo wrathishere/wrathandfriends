@@ -102,8 +102,22 @@
     .img-cell{display:flex;align-items:center;gap:0.45rem;}
     .img-thumb{width:34px;height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;}
     .img-placeholder{width:34px;height:34px;border-radius:6px;background:rgba(180,130,40,0.1);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
-    .img-input{font-size:0.72rem;color:var(--muted);border:none;background:transparent;outline:none;font-family:var(--font);max-width:110px;cursor:pointer;}
-    .img-input::file-selector-button{font-size:0.66rem;font-family:var(--font);background:rgba(180,130,40,0.1);border:1px solid var(--border);border-radius:6px;padding:0.18rem 0.45rem;cursor:pointer;color:var(--gold);font-weight:600;margin-right:0.35rem;}
+    .img-select{min-width:180px;}
+
+    /* Media library */
+    .media-admin{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 16px var(--shadow);}
+    .media-admin-top{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.7rem;}
+    .media-tools{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;}
+    .media-btn{background:rgba(180,130,40,0.1);border:1px solid var(--gold-dim);border-radius:8px;padding:.35rem .75rem;color:var(--gold);font-size:.76rem;font-weight:700;cursor:pointer;}
+    .media-btn:hover{background:var(--gold);color:#fff;}
+    .media-search{min-width:220px;}
+    .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;max-height:210px;overflow:auto;}
+    .media-card{border:1px solid var(--border);border-radius:8px;padding:.35rem;background:#fff;}
+    .media-card img{width:100%;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
+    .media-name{font-size:.68rem;color:var(--muted);margin-top:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .media-actions{display:flex;gap:.25rem;margin-top:.25rem;}
+    .media-actions button{flex:1;border:1px solid var(--border);background:var(--bg);border-radius:6px;padding:.15rem .2rem;font-size:.62rem;cursor:pointer;color:var(--muted);}
+    .media-actions button:hover{border-color:var(--gold-dim);color:var(--gold);}
 
     .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:1rem;padding:0.3rem;border-radius:6px;transition:color 0.15s;}
     .del-btn:hover{color:var(--red);}
@@ -181,6 +195,21 @@
         <button class="add-btn" id="add-tag-token" type="button">+ Add Tag</button>
       </div>
       <div class="tag-token-list" id="tag-token-list"></div>
+    </div>
+
+
+    <div class="media-admin">
+      <div class="media-admin-top">
+        <div class="section-title" style="font-size:0.95rem;">Image Library</div>
+        <div class="media-tools">
+          <button class="media-btn" id="upload-one-btn" type="button">Upload Image</button>
+          <button class="media-btn" id="upload-bulk-btn" type="button">Bulk Upload</button>
+          <input id="media-search" class="cell-input media-search" placeholder="Search images..."/>
+          <input id="upload-one-input" type="file" accept=".jpg,.jpeg,.png,.webp" hidden/>
+          <input id="upload-bulk-input" type="file" accept=".jpg,.jpeg,.png,.webp" multiple hidden/>
+        </div>
+      </div>
+      <div class="media-grid" id="media-grid"></div>
     </div>
 
     <div class="table-wrap">
@@ -262,6 +291,8 @@ let globalSaleOn = false;
 let discountPct  = 20;
 let githubToken  = lsGet("token", null);
 let tagCatalog   = lsGet("tagCatalog", {});
+let imageRegistry = lsGet("imageRegistryCache", []);
+let pendingUploads = new Map();
 
 function restoreSettings() {
   saleMode     = lsGet("saleMode", "manual");
@@ -371,17 +402,57 @@ async function loadItems() {
       console.warn("[Admin] Some items failed to load:", failed.map(r => r.reason));
     }
 
+    await loadImageRegistry();
     renderTable();
     updateCount();
     // Restore settings AFTER items load so UI reflects saved state
     restoreSettings();
     renderTagManager();
+    renderMediaGrid();
   } catch(err) {
     document.getElementById("items-body").innerHTML =
       `<tr><td colspan="9" class="loading" style="color:var(--red)">⚠️ ${err.message}<br>Check your manifest.json lists only existing files.</td></tr>`;
   }
 }
 
+
+function sanitizeFilename(name) {
+  return name.trim().toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9._-]/g,"");
+}
+function isValidImageFile(file) {
+  return /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+}
+async function loadImageRegistry() {
+  try {
+    const res = await fetch(`${APIBASE}/images`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
+    if (!res.ok) throw new Error("Image registry request failed");
+    const list = await res.json();
+    imageRegistry = (Array.isArray(list)?list:[]).filter(f=>f.type==="file" && /\.(jpg|jpeg|png|webp)$/i.test(f.name)).map(f=>f.name).sort();
+    lsSet("imageRegistryCache", imageRegistry);
+    console.log("Image Registry:", imageRegistry);
+  } catch (e) {
+    // Fallback: keep cached registry to prevent empty selectors after refresh.
+    imageRegistry = lsGet("imageRegistryCache", imageRegistry || []);
+    console.log("Image Registry:", imageRegistry);
+    console.warn("Image registry failed", e);
+  }
+}
+function buildImageOptions(selected="") {
+  console.log("Image Registry:", imageRegistry);
+  const opts = ['<option value="">Select image...</option>'];
+  const pendingNames = [...pendingUploads.keys()];
+  const allNames = [...new Set([...imageRegistry, ...pendingNames])].sort();
+  allNames.forEach(name => opts.push(`<option value="images/${name}" ${selected===`images/${name}`?"selected":""}>${esc(name)}</option>`));
+  return opts.join("");
+}
+function renderMediaGrid() {
+  const q = (document.getElementById("media-search")?.value || "").toLowerCase();
+  const grid = document.getElementById("media-grid");
+  if (!grid) return;
+  const filtered = imageRegistry.filter(n => n.toLowerCase().includes(q));
+  if (!filtered.length) { grid.innerHTML = '<div style="font-size:.75rem;color:var(--muted);">No images found.</div>'; return; }
+  grid.innerHTML = filtered.map(name => `<div class="media-card"><img loading="lazy" src="${RAW}/images/${encodeURIComponent(name)}" alt="${esc(name)}"/><div class="media-name" title="${esc(name)}">${esc(name)}</div><div class="media-actions"><button data-rename="${esc(name)}">Rename</button><button data-delete="${esc(name)}">Delete</button></div></div>`).join("");
+}
 // ── Render table ───────────────────────────────────────────
 function renderTable() {
   const tbody = document.getElementById("items-body");
@@ -424,14 +495,6 @@ function renderTable() {
         </label>
       </td>
       <td>
-        <div class="img-cell">
-          ${imgSrc
-            ? `<img class="img-thumb" src="${imgSrc}" alt="" onerror="this.style.display='none'"/>`
-            : `<div class="img-placeholder">🖼️</div>`}
-          <input type="file" class="img-input" data-index="${i}" accept="image/*"/>
-        </div>
-      </td>
-      <td>
         <details>
           <summary style="cursor:pointer;font-size:0.75rem;color:var(--gold);">Assign Tags</summary>
           <div class="tag-pick">${renderTagPicker(i, d)}</div>
@@ -446,9 +509,9 @@ function renderTable() {
       <td>
         <div class="img-cell">
           ${imgSrc
-            ? `<img class="img-thumb" src="${imgSrc}" alt="" onerror="this.style.display='none'"/>`
+            ? `<img class="img-thumb" loading="lazy" src="${imgSrc}" alt="" onerror="this.style.display='none'"/>`
             : `<div class="img-placeholder">🖼️</div>`}
-          <input type="file" class="img-input" data-index="${i}" accept="image/*"/>
+          <select class="cell-input img-select" data-index="${i}" data-field="image">${buildImageOptions(d.image||"")}</select>
         </div>
       </td>
       <td><button class="del-btn" data-index="${i}">🗑</button></td>
@@ -471,6 +534,8 @@ function attachListeners() {
       const i = +el.dataset.index, f = el.dataset.field;
       items[i].data[f] = (f==="price"||f==="salePrice"||f==="level") ? (parseFloat(el.value)||0) : el.value;
       if (f==="price") refreshComputedPrices();
+      // Keep image preview in sync when a different library file is selected.
+      if (f==="image") renderTable();
     });
   });
 
@@ -480,19 +545,6 @@ function attachListeners() {
 
   document.querySelectorAll("input[data-field='available']").forEach(cb => {
     cb.addEventListener("change", () => { items[+cb.dataset.index].data.available = cb.checked; });
-  });
-
-
-  document.querySelectorAll("input[type='file'][data-index]").forEach(inp => {
-    inp.addEventListener("change", () => {
-      const i = +inp.dataset.index, file = inp.files[0];
-      if (!file) return;
-      const path = `images/${file.name.replace(/\s+/g,"-").toLowerCase()}`;
-      items[i].data.image    = path;
-      items[i].data._imgFile = file;
-      items[i].data._imgPath = path;
-      showStatus(`📎 "${file.name}" queued — click Save`, "");
-    });
   });
 
  document.querySelectorAll("input[data-tagpick]").forEach(cb => {
@@ -575,17 +627,27 @@ document.getElementById("save-btn").addEventListener("click", async () => {
         d.salePricePct  = null;
       }
 
-      // Upload image if queued
-      if (d._imgFile) {
-        await uploadImage(d._imgFile, d._imgPath);
-        delete d._imgFile; delete d._imgPath;
-      }
+
+    }
+
+    const totalUploads = pendingUploads.size;
+    let uploaded = 0;
+    for (const [name, file] of pendingUploads.entries()) {
+      showStatus(`📤 Uploading image ${uploaded + 1}/${totalUploads}: ${name}`, "");
+      await uploadImage(file, `images/${name}`);
+      uploaded++;
+    }
+    if (pendingUploads.size) {
+      pendingUploads.clear();
+      await loadImageRegistry();
+      renderMediaGrid();
+      renderTable();
+      showStatus(`✅ Uploaded ${uploaded} image(s)`, "success");
     }
 
     // Save each item JSON
     for (const item of items) {
       const clean = {...item.data};
-      delete clean._imgFile; delete clean._imgPath;
       const result = await saveFile(
         `_data/items/${item.filename}`,
         JSON.stringify(clean, null, 2),
@@ -649,6 +711,16 @@ async function uploadImage(file, path) {
   });
 }
 
+async function deleteFile(path, sha, message) {
+  if (!sha) return;
+  const r = await fetch(`${APIBASE}/${path}`, {
+    method:"DELETE",
+    headers:{ "Authorization": `token ${githubToken}`, "Content-Type":"application/json" },
+    body: JSON.stringify({message, sha, branch: BRANCH})
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.message || `Failed to delete ${path}`);}
+}
+
 async function getFileSha(path) {
   const r = await fetch(`${APIBASE}/${path}`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
   if (!r.ok) return null;
@@ -696,6 +768,44 @@ document.getElementById('add-tag-token')?.addEventListener('click',()=>{
   renderTagManager();
   renderTable();
 });
+
+
+
+document.getElementById("upload-one-btn")?.addEventListener("click",()=>document.getElementById("upload-one-input").click());
+document.getElementById("upload-bulk-btn")?.addEventListener("click",()=>document.getElementById("upload-bulk-input").click());
+document.getElementById("media-search")?.addEventListener("input", renderMediaGrid);
+document.getElementById("upload-one-input")?.addEventListener("change", e => queueUploads(e.target.files));
+document.getElementById("upload-bulk-input")?.addEventListener("change", e => queueUploads(e.target.files));
+document.getElementById("media-grid")?.addEventListener("click", async (e) => {
+  const rename = e.target.closest("button[data-rename]");
+  const del = e.target.closest("button[data-delete]");
+  if (rename) {
+    const oldName = rename.dataset.rename;
+    const next = sanitizeFilename(prompt("Rename image:", oldName) || "");
+    if (!next || next === oldName) return;
+    const fileRes = await fetch(`${RAW}/images/${encodeURIComponent(oldName)}`);
+    const blob = await fileRes.blob();
+    await uploadImage(new File([blob], next, {type: blob.type}), `images/${next}`);
+    const sha = await getFileSha(`images/${oldName}`);
+    await deleteFile(`images/${oldName}`, sha, `Delete old image ${oldName}`);
+    items.forEach(it=>{ if (it.data.image===`images/${oldName}`) it.data.image=`images/${next}`; });
+  }
+  if (del) {
+    const name = del.dataset.delete;
+    if (!confirm(`Delete ${name}?`)) return;
+    const sha = await getFileSha(`images/${name}`);
+    if (sha) await deleteFile(`images/${name}`, sha, `Delete image ${name}`);
+    items.forEach(it=>{ if (it.data.image===`images/${name}`) it.data.image=""; });
+  }
+  await loadImageRegistry(); renderMediaGrid(); renderTable();
+});
+
+function queueUploads(fileList) {
+  const files = Array.from(fileList||[]).filter(isValidImageFile);
+  files.forEach(file => { const clean = sanitizeFilename(file.name); if (!pendingUploads.has(clean)) pendingUploads.set(clean, new File([file], clean, {type:file.type})); });
+  renderTable();
+  showStatus(`📦 ${pendingUploads.size} image(s) queued for Save`, "");
+}
 
 // ── Status bar ─────────────────────────────────────────────
 let stTimer;
