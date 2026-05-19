@@ -14,5 +14,5 @@
     "Tarrific",
     "Moder"
   ],
-  "tagGroups": {}
+  "tagGroups": { "Token": ["Tarrific"], "Boss Kill": ["Moder"] }
 }
