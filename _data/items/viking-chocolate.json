@@ -16,5 +16,6 @@
   "tags": [
     "Eikthyr",
     "Bait N Fish"
+  "tagGroups": { "Token": ["Bait N Fish"], "Boss Kill": ["Eikthyr"] }
   ]
 }
