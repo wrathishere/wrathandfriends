@@ -13,9 +13,7 @@
   "discountPct": 0,
   "onSale": false,
   "available": true,
-  "tags": [
-    "Eikthyr",
-    "Bait N Fish"
-  "tagGroups": { "Token": ["Bait N Fish"], "Boss Kill": ["Eikthyr"] }
-  ]
+  "tags": ["Eikthyr",
+    "Bait N Fish"]
+  "tagGroups": { "Token": ["Bait N Fish"], "Boss Kill": ["Eikthyr"] } 
 }
