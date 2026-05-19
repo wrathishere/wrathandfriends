@@ -133,7 +133,18 @@
     const categories = [...new Set(ITEMS.filter(i => i.available !== false).map(i => i.category))];
     const pillsContainer = document.querySelector(".category-pills");
 
-    pillsContainer.innerHTML = `<button class="pill active" data-category="all">All Items</button>`;
+    pillsContainer.innerHTML = "";
+const allBtn = document.createElement("button");
+allBtn.className = "pill active";
+allBtn.dataset.category = "all";
+allBtn.textContent = "All Items";
+allBtn.addEventListener("click", () => {
+  document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+  allBtn.classList.add("active");
+  activeCategory = "all";
+  renderGrid();
+});
+pillsContainer.appendChild(allBtn);
 
     categories.forEach(category => {
       const btn = document.createElement("button");
