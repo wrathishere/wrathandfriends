@@ -404,7 +404,7 @@ function renderTable() {
       <td><input class="cell-input" data-index="${i}" data-field="name" value="${esc(d.name||'')}" placeholder="Item name…"/></td>
       <td>
         <select class="cell-input" data-index="${i}" data-field="category">
-          ${["weapon","armor","potion","accessory","scroll","other"].map(c=>
+          ${["weapon","armor","resource","consumables","services","bulk","other"].map(c=>
             `<option value="${c}" ${(d.category||"other")===c?"selected":""}>${c[0].toUpperCase()+c.slice(1)}</option>`
           ).join("")}
         </select>
