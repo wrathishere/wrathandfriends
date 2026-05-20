@@ -399,7 +399,7 @@ function collectTagGroupsFromItems() {
 
     const manufacturing = splitRecommendationList(row["Manufacturing Buy Suggestion"]);
     const retail = splitRecommendationList(row["Retail Buy Suggestion"]);
-    const wholesale = splitRecommendationList(row["Wholesale Buy Suggestion"]);
+    const wholesale = splitRecommendationList(row["WholeSale Buy Suggestion"]);
 
     reportContent.innerHTML = `
       <h2>PLAYER REPORT — ${escHtml(selectedName)}</h2>
