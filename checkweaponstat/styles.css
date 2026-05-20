@@ -16,7 +16,7 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
 .input{min-width:220px;flex:1}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(60,30,10,.08)}
-.thumb{aspect-ratio:1/2;background:#efe2ca;display:flex;align-items:center;justify-content:center}
+.thumb{aspect-ratio:1.3/2;background:#efe2ca;display:flex;align-items:center;justify-content:center}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .meta{padding:.8rem}
 .name{margin:0 0 .25rem;font-weight:700}
