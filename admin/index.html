@@ -213,6 +213,25 @@
       <div class="media-grid" id="media-grid"></div>
     </div>
 
+
+
+    <div class="media-admin" id="weapon-showcase-manager">
+      <div class="media-admin-top">
+        <div class="section-title" style="font-size:0.95rem;">Weapon Showcase Manager</div>
+        <div class="media-tools">
+          <button class="media-btn" id="weapon-upload-btn" type="button">Upload Showcase Images</button>
+          <input id="weapon-upload-input" type="file" accept=".jpg,.jpeg,.png,.webp" multiple hidden/>
+          <button class="add-btn" id="weapon-add-btn" type="button">＋ Add Weapon Entry</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Level</th><th>Image</th><th></th></tr></thead>
+          <tbody id="weapon-body"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="table-wrap">
       <table id="items-table">
         <thead>
@@ -295,6 +314,9 @@ let githubToken  = lsGet("token", null);
 let tagCatalog   = lsGet("tagCatalog", {});
 let imageRegistry = [];
 let pendingUploads = new Map();
+let weaponEntries = [];
+let weaponImageRegistry = [];
+let pendingWeaponUploads = new Map();
 
 function restoreSettings() {
   saleMode     = lsGet("saleMode", "manual");
@@ -405,7 +427,9 @@ async function loadItems() {
     }
 
     await loadImageRegistry();
+    await loadWeaponShowcaseData();
     renderTable();
+    renderWeaponTable();
     updateCount();
     // Restore settings AFTER items load so UI reflects saved state
     restoreSettings();
@@ -658,6 +682,15 @@ document.getElementById("save-btn").addEventListener("click", async () => {
       renderMediaGrid();
     }
 
+    for (const [name, file] of pendingWeaponUploads.entries()) {
+      await uploadImage(file, `checkweaponstat/images/${name}`);
+    }
+    if (pendingWeaponUploads.size) {
+      pendingWeaponUploads.clear();
+      await loadWeaponImageRegistry();
+      renderWeaponTable();
+    }
+
     // Save each item JSON
     for (const item of items) {
       const clean = {...item.data};
@@ -670,6 +703,16 @@ document.getElementById("save-btn").addEventListener("click", async () => {
       item.sha  = result.content.sha;
       item._new = false;
     }
+
+    // Save showcase weapon JSON
+    for (const weapon of weaponEntries) {
+      const clean = {...weapon.data};
+      const result = await saveFile(`checkweaponstat/_data/${weapon.filename}`, JSON.stringify(clean, null, 2), weapon.sha, `${weapon._new?"Add":"Update"} showcase weapon: ${weapon.data.name || weapon.filename}`);
+      weapon.sha = result.content.sha;
+      weapon._new = false;
+    }
+    const weaponManifestSha = await getFileSha('checkweaponstat/_data/manifest.json');
+    await saveFile('checkweaponstat/_data/manifest.json', JSON.stringify(weaponEntries.map(w=>w.filename), null, 2), weaponManifestSha, 'chore: update weapon showcase manifest');
 
     // Save manifest
     const manifestContent = JSON.stringify(items.map(i => i.filename), null, 2);
@@ -818,6 +861,60 @@ function queueUploads(fileList) {
   files.forEach(file => { const clean = sanitizeFilename(file.name); if (!pendingUploads.has(clean)) pendingUploads.set(clean, new File([file], clean, {type:file.type})); });
   showStatus(`📦 ${pendingUploads.size} image(s) queued for Save`, "");
 }
+
+
+
+async function loadWeaponShowcaseData() {
+  try {
+    const m = await fetch(`${RAW}/checkweaponstat/_data/manifest.json?t=${Date.now()}`);
+    const manifest = await m.json();
+    weaponEntries = [];
+    for (const filename of (manifest||[])) {
+      const r = await fetch(`${RAW}/checkweaponstat/_data/${filename}?t=${Date.now()}`);
+      if (!r.ok) continue;
+      const data = await r.json();
+      const meta = await fetch(`${APIBASE}/checkweaponstat/_data/${filename}`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
+      const metaJson = meta.ok ? await meta.json() : {};
+      weaponEntries.push({ filename, sha: metaJson.sha||null, data });
+    }
+    await loadWeaponImageRegistry();
+  } catch (e) { console.warn('Weapon showcase load failed', e); weaponEntries = []; }
+}
+
+async function loadWeaponImageRegistry() {
+  try {
+    const res = await fetch(`${APIBASE}/checkweaponstat/images`, githubToken ? {headers:{"Authorization":`token ${githubToken}`}} : {});
+    if (!res.ok) { weaponImageRegistry = []; return; }
+    const list = await res.json();
+    weaponImageRegistry = (Array.isArray(list)?list:[]).filter(f=>f.type==='file' && /\.(jpg|jpeg|png|webp)$/i.test(f.name)).map(f=>f.name).sort();
+  } catch { weaponImageRegistry = []; }
+}
+
+function renderWeaponTable() {
+  const body = document.getElementById('weapon-body');
+  if (!body) return;
+  if (!weaponEntries.length) { body.innerHTML = '<tr><td colspan="4" class="loading">No showcase weapons yet.</td></tr>'; return; }
+  body.innerHTML = weaponEntries.map((row, i) => `<tr>
+    <td><input class="cell-input" data-wi="${i}" data-wf="name" value="${esc(row.data.name||'')}"/></td>
+    <td><input class="cell-input" type="number" min="1" data-wi="${i}" data-wf="level" value="${Number(row.data.level)||1}"/></td>
+    <td><select class="cell-input" data-wi="${i}" data-wf="image"><option value="">Select image...</option>${weaponImageRegistry.map(n=>`<option value="/checkweaponstat/images/${n}" ${(row.data.image===`/checkweaponstat/images/${n}`)?'selected':''}>${esc(n)}</option>`).join('')}</select></td>
+    <td><button class="del-btn" data-wdel="${i}">🗑</button></td>
+  </tr>`).join('');
+
+  body.querySelectorAll('[data-wf]').forEach(el => el.addEventListener('input', () => { const f = el.dataset.wf; weaponEntries[+el.dataset.wi].data[f] = f==='level' ? Math.max(1, Number(el.value)||1) : el.value; }));
+  body.querySelectorAll('[data-wdel]').forEach(btn => btn.addEventListener('click', () => { weaponEntries.splice(+btn.dataset.wdel, 1); renderWeaponTable(); }));
+}
+
+document.getElementById('weapon-add-btn')?.addEventListener('click', () => {
+  weaponEntries.push({ filename: `weapon-${Date.now()}.json`, sha: null, _new: true, data: { name:'', level:1, image:'' } });
+  renderWeaponTable();
+});
+document.getElementById('weapon-upload-btn')?.addEventListener('click', () => document.getElementById('weapon-upload-input').click());
+document.getElementById('weapon-upload-input')?.addEventListener('change', e => {
+  const files = Array.from(e.target.files||[]).filter(isValidImageFile);
+  files.forEach(file => { const clean = sanitizeFilename(file.name); if (!pendingWeaponUploads.has(clean)) pendingWeaponUploads.set(clean, new File([file], clean, {type:file.type})); });
+  showStatus(`📦 ${pendingWeaponUploads.size} showcase image(s) queued for Save`, '');
+});
 
 // ── Status bar ─────────────────────────────────────────────
 let stTimer;
