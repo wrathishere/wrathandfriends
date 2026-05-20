@@ -22,5 +22,6 @@
     "Boss Kill": [
       "Eikthyr"
     ]
-  }
+  },
+  "saleType": "Per Stack"
 }
