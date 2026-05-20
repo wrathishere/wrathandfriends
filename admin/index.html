@@ -80,7 +80,8 @@
     .cell-input:focus{border-color:var(--gold-dim);background:var(--bg);}
     .cell-input.price{font-weight:700;color:var(--gold);width:80px;}
     .cell-input.sprice{font-weight:700;color:var(--red);width:80px;}
-    .cell-input.level{width:55px;text-align:center;}
+    .cell-input.sale-type{min-width:120px;}
+    .cell-input.sale-type-custom{min-width:130px;}
     select.cell-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b09870'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.5rem center;padding-right:1.4rem;}
 
     /* Sale columns visibility */
@@ -219,7 +220,8 @@
             <th style="width:30px">#</th>
             <th>Name</th>
             <th>Category</th>
-            <th>Level</th>
+            <th>Sale Type</th>
+            <th>Custom Sale Type</th>
             <th>Price</th>
             <th class="col-sale" id="th-sale-price">Sale Price</th>
             <th class="col-sale" id="th-on-sale" style="text-align:center;">On Sale</th>
@@ -448,7 +450,7 @@ function renderMediaGrid() {
 function renderTable() {
   const tbody = document.getElementById("items-body");
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="loading">No items yet — click "+ Add New Item"</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="loading">No items yet — click "+ Add New Item"</td></tr>`;
     return;
   }
 
@@ -471,7 +473,14 @@ function renderTable() {
           ).join("")}
         </select>
       </td>
-      <td><input class="cell-input level" type="number" min="1" data-index="${i}" data-field="level" value="${d.level||1}"/></td>
+      <td>
+        <select class="cell-input sale-type" data-index="${i}" data-field="saleType">
+          ${["Per Item","Per Stack","Per Set","Bundle","Pair","Crate","Pack","Per KG","Per Roll"].map(st=>
+            `<option value="${st}" ${(d.saleType||"Per Item")===st?"selected":""}>${st}</option>`
+          ).join("")}
+        </select>
+      </td>
+      <td><input class="cell-input sale-type-custom" data-index="${i}" data-field="saleTypeCustom" value="${esc(d.saleTypeCustom||"")}" placeholder="Optional override…"/></td>
       <td><input class="cell-input price" type="number" min="0" data-index="${i}" data-field="price" value="${d.price||0}"/></td>
       <td class="col-sale">
         ${saleMode === "manual"
@@ -523,7 +532,7 @@ function attachListeners() {
   document.querySelectorAll(".cell-input[data-field]").forEach(el => {
     el.addEventListener("change", () => {
       const i = +el.dataset.index, f = el.dataset.field;
-      items[i].data[f] = (f==="price"||f==="salePrice"||f==="level") ? (parseFloat(el.value)||0) : el.value;
+      items[i].data[f] = (f==="price"||f==="salePrice") ? (parseFloat(el.value)||0) : el.value;
       if (f==="price") refreshComputedPrices();
       // Keep image preview in sync when a different library file is selected.
       if (f==="image") renderTable();
@@ -578,7 +587,7 @@ function attachListeners() {
 document.getElementById("add-btn").addEventListener("click", () => {
   items.push({
     filename: `item-${Date.now()}.json`, sha: null, _new: true,
-    data: { name:"", price:0, category:"other", level:1, onSale:false, salePrice:null, globalSaleOn:false, salePricePct:null, discountPct:0, image:"", description:"", tags:[], tagGroups:{} }
+    data: { name:"", price:0, category:"other", saleType:"Per Item", saleTypeCustom:"", onSale:false, salePrice:null, globalSaleOn:false, salePricePct:null, discountPct:0, image:"", description:"", tags:[], tagGroups:{} }
   });
   renderTable(); updateCount();
   const inputs = document.querySelectorAll("[data-field='name']");
