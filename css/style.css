@@ -667,3 +667,63 @@ body {
 .report-modal h2{font-size:1.15rem;color:var(--gold);margin-bottom:.5rem}
 .report-modal h3{font-size:.92rem;margin:.7rem 0 .3rem;color:var(--text-main)}
 .report-modal p,.report-modal li{font-size:.88rem;color:var(--text-main)}
+
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.3rem;
+  padding: 0.28rem 0.52rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8e8 0%, #f0dfbe 100%);
+  color: var(--text-main);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.card-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--gold);
+  box-shadow: 0 4px 10px rgba(176, 125, 46, 0.2);
+}
+
+.bulk-controls {
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(180, 130, 40, 0.05);
+}
+
+.bulk-topline,
+.bulk-pricing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.bulk-qty,
+.bulk-total,
+.bulk-discount,
+.bulk-savings,
+.bulk-final { color: var(--gold); }
+
+.bulk-slider {
+  width: 100%;
+  margin: 0.35rem 0;
+  accent-color: var(--gold);
+  touch-action: pan-y;
+}
+
+.bulk-final-row {
+  margin-top: 0.2rem;
+  padding-top: 0.2rem;
+  border-top: 1px dashed var(--border);
+}
