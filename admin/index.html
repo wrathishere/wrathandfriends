@@ -527,9 +527,25 @@ function updateCount() {
   document.getElementById("count-badge").textContent = `${items.length} item${items.length!==1?"s":""}`;
 }
 
+function syncFieldFromElement(el) {
+  const i = +el.dataset.index, f = el.dataset.field;
+  if (!items[i] || !f) return;
+  items[i].data[f] = (f==="price"||f==="salePrice") ? (parseFloat(el.value)||0) : el.value;
+}
+
+function syncVisibleRowFields() {
+  document.querySelectorAll(".cell-input[data-field]").forEach(syncFieldFromElement);
+}
+
 // ── Attach listeners ───────────────────────────────────────
 function attachListeners() {
   document.querySelectorAll(".cell-input[data-field]").forEach(el => {
+    el.addEventListener("input", () => {
+      const f = el.dataset.field;
+      syncFieldFromElement(el);
+      if (f==="price") refreshComputedPrices();
+    });
+
     el.addEventListener("change", () => {
       const i = +el.dataset.index, f = el.dataset.field;
       items[i].data[f] = (f==="price"||f==="salePrice") ? (parseFloat(el.value)||0) : el.value;
@@ -606,6 +622,9 @@ document.getElementById("save-btn").addEventListener("click", async () => {
   btn.textContent = "Saving…"; btn.className = "save-btn saving";
 
   try {
+    // Capture any in-progress edits even if an input has not blurred yet
+    syncVisibleRowFields();
+
     for (const item of items) {
       const d = item.data;
 
