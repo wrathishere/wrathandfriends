@@ -672,15 +672,14 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0.3rem;
-  padding: 0.28rem 0.52rem;
+  margin-top: 0.35rem;
+  padding: 0.38rem 0.65rem;
   border: 1px solid var(--gold-dim);
   border-radius: 999px;
   background: linear-gradient(180deg, #fff8e8 0%, #f0dfbe 100%);
   color: var(--text-main);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.1;
   text-decoration: none;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
@@ -710,20 +709,11 @@ body {
 }
 
 .bulk-qty,
-.bulk-total,
-.bulk-discount,
-.bulk-savings,
-.bulk-final { color: var(--gold); }
+.bulk-total { color: var(--gold); }
 
 .bulk-slider {
   width: 100%;
   margin: 0.35rem 0;
   accent-color: var(--gold);
   touch-action: pan-y;
-}
-
-.bulk-final-row {
-  margin-top: 0.2rem;
-  padding-top: 0.2rem;
-  border-top: 1px dashed var(--border);
 }

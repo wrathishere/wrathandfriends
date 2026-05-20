@@ -23,5 +23,6 @@
       "Eikthyr"
     ]
   },
-  "saleType": "Per Stack"
+  "saleType": "Per Stack",
+  "saleTypeCustom": ""
 }
