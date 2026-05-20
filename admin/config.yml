@@ -12,7 +12,7 @@ collections:
     create: true
     slug: "{{slug}}"
     identifier_field: name
-    summary: "{{name}} — 💰 {{price}} — Lv.{{level}} — {{category}}"
+    summary: "{{name}} — 💰 {{price}} — {{saleType}} — {{category}}"
     format: "json"
     fields:
       - label: "Item Name"
@@ -36,12 +36,26 @@ collections:
           - { label: "📜 Scroll", value: "scroll" }
           - { label: "🎁 Other", value: "other" }
 
-      - label: "Level"
-        name: "level"
-        widget: "number"
-        value_type: "int"
-        min: 1
-        default: 1
+      - label: "Sale Type"
+        name: "saleType"
+        widget: "select"
+        default: "Per Item"
+        options:
+          - "Per Item"
+          - "Per Stack"
+          - "Per Set"
+          - "Bundle"
+          - "Pair"
+          - "Crate"
+          - "Pack"
+          - "Per KG"
+          - "Per Roll"
+
+      - label: "Custom Sale Type (optional override)"
+        name: "saleTypeCustom"
+        widget: "string"
+        required: false
+        hint: "If provided, this custom text overrides the dropdown sale type."
 
       - label: "On Sale"
         name: "sale"
