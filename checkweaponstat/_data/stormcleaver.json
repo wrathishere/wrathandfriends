@@ -1,5 +1,6 @@
 {
   "name": "Stormcleaver",
+  "type": "Greatsword",
   "image": "/checkweaponstat/images/stormcleaver.webp",
-  "level": 26
+  "link": ""
 }

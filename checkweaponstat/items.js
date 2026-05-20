@@ -10,8 +10,9 @@ function normalizeWeapon(entry, index) {
   return {
     id: index + 1,
     name: entry?.name || "Unknown Weapon",
-    level: Number(entry?.level) || 1,
-    image: entry?.image || ""
+    type: entry?.type || "Unknown Type",
+    image: entry?.image || "",
+    link: entry?.link || ""
   };
 }
 

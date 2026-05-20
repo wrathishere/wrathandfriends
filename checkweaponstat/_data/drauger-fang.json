@@ -1,5 +1,6 @@
 {
   "name": "Drauger Fang",
+  "type": "Bow",
   "image": "/checkweaponstat/images/drauger-fang.webp",
-  "level": 18
+  "link": "/weaponstats/drauger-fang.html"
 }
