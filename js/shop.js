@@ -284,7 +284,7 @@ function collectTagGroupsFromItems() {
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
-        <div class="card-badge">Lv. ${item.level}</div>
+        <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
         ${media}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
@@ -350,7 +350,7 @@ function collectTagGroupsFromItems() {
     modalContent.innerHTML = `
       ${media}
       <div class="modal-body">
-        <span class="modal-level-badge">Level ${item.level}</span>
+        <span class="modal-level-badge">${escHtml(item.saleType || "Per Item")}</span>
         <h2 class="modal-title" id="modal-title">${escHtml(item.name)}</h2>
         ${desc}
         ${tagsHTML}

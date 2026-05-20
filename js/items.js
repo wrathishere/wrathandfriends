@@ -58,6 +58,7 @@ function normalizeItem(raw, index) {
     price:        parseFloat(raw.price) || 0,
     category:     category,
     level:        parseInt(raw.level)   || 1,
+    saleType:     normalizeSaleType(raw),
     // Image — use full raw URL so it loads without GitHub Pages rebuild
     image:        raw.image ? `${REPO_RAW}/${raw.image}?t=${_lastFetched}` : null,
     // Tags — array, supports both string "a,b,c" and array ["a","b"]
@@ -115,4 +116,21 @@ function normalizeTagGroups(raw) {
     return out;
   }
   return { Tags: normalizeTags(raw.tags) };
+}
+
+
+function normalizeSaleType(raw) {
+  const custom = raw.saleTypeCustom || raw.saleType_custom || raw.sale_type_custom;
+  if (custom && String(custom).trim()) return toSaleTypeLabel(custom);
+
+  const selected = raw.saleType || raw.sale_type;
+  if (selected && String(selected).trim()) return toSaleTypeLabel(selected);
+
+  return "Per Item";
+}
+
+function toSaleTypeLabel(value) {
+  const label = String(value).trim().replace(/\s+/g, " ");
+  if (!label) return "Per Item";
+  return label.toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
 }
