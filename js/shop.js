@@ -30,9 +30,6 @@
   const WEAPON_PAGE_URL = window.WEAPON_PAGE_URL || "/checkweaponstat/index.html";
   const BULK_MIN_QTY = 1;
   const BULK_MAX_QTY = 32;
-  const BULK_DISCOUNT_START_QTY = 5;
-  const BULK_DISCOUNT_BASE_PCT = 10;
-  const BULK_DISCOUNT_MAX_PCT = 25;
 
   // ── DOM refs ───────────────────────────────────────────
   const grid = document.getElementById("shop-grid");
@@ -312,19 +309,9 @@ function collectTagGroupsFromItems() {
   }
 
   function buildCategoryCardExtension(item) {
-    if (isWeaponCategory(item.category)) return buildWeaponCardExtension();
-    if (isBulkCategory(item.category)) return buildBulkCardExtension(item);
+    if (item.category === "weapon") return buildWeaponCardExtension();
+    if (item.category === "bulk") return buildBulkCardExtension(item);
     return "";
-  }
-
-  function isWeaponCategory(category) {
-    const normalized = String(category || "").toLowerCase().trim();
-    return normalized === "weapon" || normalized === "weapons";
-  }
-
-  function isBulkCategory(category) {
-    const normalized = String(category || "").toLowerCase().trim();
-    return normalized === "bulk" || normalized === "bulks" || normalized.includes("bulk");
   }
 
   function buildWeaponCardExtension() {
@@ -339,11 +326,7 @@ function collectTagGroupsFromItems() {
           <strong class="bulk-qty" data-bulk-qty>${BULK_MIN_QTY}</strong>
         </div>
         <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity for ${escHtml(item.name)}" />
-        <div class="bulk-pricing"><span>Unit:</span><strong class="bulk-unit">💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
-        <div class="bulk-pricing"><span>Subtotal:</span><strong class="bulk-total" data-bulk-total>💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
-        <div class="bulk-pricing"><span>Discount:</span><strong class="bulk-discount" data-bulk-discount>0%</strong></div>
-        <div class="bulk-pricing"><span>Savings:</span><strong class="bulk-savings" data-bulk-savings>💰 0</strong></div>
-        <div class="bulk-pricing bulk-final-row"><span>Final Total:</span><strong class="bulk-final" data-bulk-final>💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
+        <div class="bulk-pricing">Total: <span class="bulk-total" data-bulk-total>${(Number(item.price) || 0).toLocaleString()}</span></div>
       </div>`;
   }
 
@@ -393,30 +376,14 @@ function collectTagGroupsFromItems() {
       const slider = container.querySelector("[data-bulk-slider]");
       const qty = container.querySelector("[data-bulk-qty]");
       const total = container.querySelector("[data-bulk-total]");
-      const discount = container.querySelector("[data-bulk-discount]");
-      const savings = container.querySelector("[data-bulk-savings]");
-      const final = container.querySelector("[data-bulk-final]");
       const unitPrice = Number(container.dataset.unitPrice) || 0;
 
-      if (!slider || !qty || !total || !discount || !savings || !final) return;
-
-      const getBulkDiscountPct = quantity => {
-        if (quantity < BULK_DISCOUNT_START_QTY) return 0;
-        return Math.min(BULK_DISCOUNT_BASE_PCT + (quantity - BULK_DISCOUNT_START_QTY), BULK_DISCOUNT_MAX_PCT);
-      };
+      if (!slider || !qty || !total) return;
 
       const updateBulkDisplay = () => {
         const currentQty = Number(slider.value) || BULK_MIN_QTY;
-        const subtotal = unitPrice * currentQty;
-        const discountPct = getBulkDiscountPct(currentQty);
-        const savingsAmount = subtotal * (discountPct / 100);
-        const finalTotal = subtotal - savingsAmount;
-
         qty.textContent = String(currentQty);
-        total.textContent = `💰 ${subtotal.toLocaleString()}`;
-        discount.textContent = `${discountPct}%`;
-        savings.textContent = `💰 ${savingsAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-        final.textContent = `💰 ${finalTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        total.textContent = (unitPrice * currentQty).toLocaleString();
       };
 
       slider.addEventListener("input", updateBulkDisplay);

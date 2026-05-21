@@ -1,4 +1,4 @@
-const SHOWCASE_RAW = "https://raw.githubusercontent.com/wrathishere/rpg-shop/main/checkweaponstat";
+const SHOWCASE_RAW = "https://raw.githubusercontent.com/wrathishere/wrathandfriends/main/checkweaponstat";
 
 async function fetchShowcaseJSON(path) {
   const res = await fetch(`${SHOWCASE_RAW}/${path}?t=${Date.now()}`);
@@ -11,7 +11,7 @@ function normalizeWeapon(entry, index) {
     id: index + 1,
     name: entry?.name || "Unknown Weapon",
     type: entry?.type || "Unknown Type",
-    image: entry?.image || "",
+    image: entry?.image ? `${SHOWCASE_RAW}/${entry.image}` : "",
     link: entry?.link || ""
   };
 }
