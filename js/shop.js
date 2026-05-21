@@ -279,18 +279,21 @@ function collectTagGroupsFromItems() {
     const base = buildBaseCardParts(item);
     const categoryExtension = buildCategoryCardExtension(item);
 
+    const isWeapon = item.category === "weapon";
+
     return `
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
         ${base.media}
+        ${isWeapon ? `<div class="card-weapon-btn-wrap">${categoryExtension}</div>` : ""}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
           <div class="card-footer">
             ${base.priceMarkup}
           </div>
-          ${categoryExtension}
+          ${isWeapon ? "" : categoryExtension}
           ${base.tagsHTML}
         </div>
       </article>`;
