@@ -26,6 +26,14 @@
   // <script>window.PLAYER_SHEET_CSV = "https://docs.google.com/.../pub?output=csv";</script>
   const PLAYER_SHEET_CSV = window.PLAYER_SHEET_CSV || "";
 
+  const WEAPON_BUTTON_LABEL = "Check Available Weapons";
+  const WEAPON_PAGE_URL = window.WEAPON_PAGE_URL || "/checkweaponstat/index.html";
+  const BULK_MIN_QTY = 1;
+  const BULK_MAX_QTY = 32;
+  const BULK_DISCOUNT_START_QTY = 5;
+  const BULK_DISCOUNT_BASE_PCT = 10;
+  const BULK_DISCOUNT_MAX_PCT = 25;
+
   // ── DOM refs ───────────────────────────────────────────
   const grid = document.getElementById("shop-grid");
   const emptyState = document.getElementById("empty-state");
@@ -271,29 +279,72 @@ function collectTagGroupsFromItems() {
   function buildCard(item) {
     const { onSale } = getSaleInfo(item);
     const recommendationScore = getRecommendationScore(item);
-
-    const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-emoji\\'>${item.emoji}</div>'"/></div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
-
-    const tagsHTML = item.tags.length
-      ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
-      : "";
+    const base = buildBaseCardParts(item);
+    const categoryExtension = buildCategoryCardExtension(item);
 
     return `
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
-        ${media}
+        ${base.media}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
           <div class="card-footer">
-            ${priceHTML(item)}
+            ${base.priceMarkup}
           </div>
-          ${tagsHTML}
+          ${categoryExtension}
+          ${base.tagsHTML}
         </div>
       </article>`;
+  }
+
+  function buildBaseCardParts(item) {
+    const media = item.image
+      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/></div>`
+      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
+
+    const tagsHTML = item.tags.length
+      ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
+      : "";
+
+    return { media, tagsHTML, priceMarkup: priceHTML(item) };
+  }
+
+  function buildCategoryCardExtension(item) {
+    if (isWeaponCategory(item.category)) return buildWeaponCardExtension();
+    if (isBulkCategory(item.category)) return buildBulkCardExtension(item);
+    return "";
+  }
+
+  function isWeaponCategory(category) {
+    const normalized = String(category || "").toLowerCase().trim();
+    return normalized === "weapon" || normalized === "weapons";
+  }
+
+  function isBulkCategory(category) {
+    const normalized = String(category || "").toLowerCase().trim();
+    return normalized === "bulk" || normalized === "bulks" || normalized.includes("bulk");
+  }
+
+  function buildWeaponCardExtension() {
+    return `<a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a>`;
+  }
+
+  function buildBulkCardExtension(item) {
+    return `
+      <div class="bulk-controls" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
+        <div class="bulk-topline">
+          <span class="bulk-label">Quantity:</span>
+          <strong class="bulk-qty" data-bulk-qty>${BULK_MIN_QTY}</strong>
+        </div>
+        <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity for ${escHtml(item.name)}" />
+        <div class="bulk-pricing"><span>Unit:</span><strong class="bulk-unit">💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
+        <div class="bulk-pricing"><span>Subtotal:</span><strong class="bulk-total" data-bulk-total>💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
+        <div class="bulk-pricing"><span>Discount:</span><strong class="bulk-discount" data-bulk-discount>0%</strong></div>
+        <div class="bulk-pricing"><span>Savings:</span><strong class="bulk-savings" data-bulk-savings>💰 0</strong></div>
+        <div class="bulk-pricing bulk-final-row"><span>Final Total:</span><strong class="bulk-final" data-bulk-final>💰 ${(Number(item.price) || 0).toLocaleString()}</strong></div>
+      </div>`;
   }
 
   function renderGrid() {
@@ -315,6 +366,7 @@ function collectTagGroupsFromItems() {
     });
 
     attachCardListeners();
+    attachCategoryCardListeners();
   }
 
   function attachCardListeners() {
@@ -327,6 +379,48 @@ function collectTagGroupsFromItems() {
           openModal(id);
         }
       });
+    });
+  }
+
+
+  function attachCategoryCardListeners() {
+    grid.querySelectorAll(".card-action-btn, .bulk-slider").forEach(el => {
+      el.addEventListener("click", event => event.stopPropagation());
+      el.addEventListener("keydown", event => event.stopPropagation());
+    });
+
+    grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
+      const slider = container.querySelector("[data-bulk-slider]");
+      const qty = container.querySelector("[data-bulk-qty]");
+      const total = container.querySelector("[data-bulk-total]");
+      const discount = container.querySelector("[data-bulk-discount]");
+      const savings = container.querySelector("[data-bulk-savings]");
+      const final = container.querySelector("[data-bulk-final]");
+      const unitPrice = Number(container.dataset.unitPrice) || 0;
+
+      if (!slider || !qty || !total || !discount || !savings || !final) return;
+
+      const getBulkDiscountPct = quantity => {
+        if (quantity < BULK_DISCOUNT_START_QTY) return 0;
+        return Math.min(BULK_DISCOUNT_BASE_PCT + (quantity - BULK_DISCOUNT_START_QTY), BULK_DISCOUNT_MAX_PCT);
+      };
+
+      const updateBulkDisplay = () => {
+        const currentQty = Number(slider.value) || BULK_MIN_QTY;
+        const subtotal = unitPrice * currentQty;
+        const discountPct = getBulkDiscountPct(currentQty);
+        const savingsAmount = subtotal * (discountPct / 100);
+        const finalTotal = subtotal - savingsAmount;
+
+        qty.textContent = String(currentQty);
+        total.textContent = `💰 ${subtotal.toLocaleString()}`;
+        discount.textContent = `${discountPct}%`;
+        savings.textContent = `💰 ${savingsAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        final.textContent = `💰 ${finalTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+      };
+
+      slider.addEventListener("input", updateBulkDisplay);
+      updateBulkDisplay();
     });
   }
 
