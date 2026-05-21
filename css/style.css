@@ -673,14 +673,16 @@ body {
   align-items: center;
   justify-content: center;
   margin-top: 0.35rem;
-  padding: 0.38rem 0.65rem;
+  padding: 0.28rem 0.55rem;
   border: 1px solid var(--gold-dim);
   border-radius: 999px;
   background: linear-gradient(180deg, #fff8e8 0%, #f0dfbe 100%);
   color: var(--text-main);
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-decoration: none;
+  width: fit-content;
+  align-self: flex-start;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
 
