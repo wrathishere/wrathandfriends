@@ -668,21 +668,26 @@ body {
 .report-modal h3{font-size:.92rem;margin:.7rem 0 .3rem;color:var(--text-main)}
 .report-modal p,.report-modal li{font-size:.88rem;color:var(--text-main)}
 
+.card-weapon-btn-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0.75rem 0.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
 .card-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0.35rem;
-  padding: 0.28rem 0.55rem;
+  padding: 0.2rem 0.5rem;
   border: 1px solid var(--gold-dim);
   border-radius: 999px;
   background: linear-gradient(180deg, #fff8e8 0%, #f0dfbe 100%);
   color: var(--text-main);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
   text-decoration: none;
   width: fit-content;
-  align-self: flex-start;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
 
