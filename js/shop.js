@@ -287,7 +287,6 @@ function collectTagGroupsFromItems() {
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
         ${base.media}
-        ${isWeapon ? `<div class="card-weapon-btn-wrap">${categoryExtension}</div>` : ""}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
           <div class="card-footer">
@@ -300,9 +299,12 @@ function collectTagGroupsFromItems() {
   }
 
   function buildBaseCardParts(item) {
+    const weaponBtnHTML = item.category === "weapon"
+      ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
+      : "";
     const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/></div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
+      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtnHTML}</div>`
+      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div>${weaponBtnHTML}</div>`;
 
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
