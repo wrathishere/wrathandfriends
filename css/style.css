@@ -671,8 +671,10 @@ body {
 .card-weapon-btn-wrap {
   display: flex;
   justify-content: center;
-  padding: 0.35rem 0.75rem 0.1rem;
-  border-bottom: 1px solid var(--border);
+  margin-top: -1rem;
+  padding: 0 0.75rem 0.4rem;
+  position: relative;
+  z-index: 1;
 }
 
 .card-action-btn {
