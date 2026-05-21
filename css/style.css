@@ -234,11 +234,11 @@ body {
 }
 .card-enter { animation: cardEnter 0.35s ease both; }
 
-/* ── Card image area — fills top portion of card ─────────── */
+/* ── Card image area — fixed height ──────────────────────── */
 .card-img-wrap {
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  height: 220px;
+  flex-shrink: 0;
   overflow: hidden;
   background: #f0e8d8;
   display: flex;
