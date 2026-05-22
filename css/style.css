@@ -703,35 +703,46 @@ body {
   box-shadow: 0 4px 10px rgba(176, 125, 46, 0.2);
 }
 
-.bulk-controls {
-  margin-top: 0.35rem;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(180, 130, 40, 0.05);
-}
+
 
 .bulk-topline,
-.bulk-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  margin-top: 0.2rem;
-}
 
-.bulk-discount-label {
-  font-weight: 700;
-  color: var(--gold);
-}
 
 .bulk-qty,
-.bulk-total { color: var(--gold); }
+
 
 .bulk-slider {
   width: 100%;
   margin: 0.35rem 0;
   accent-color: var(--gold);
   touch-action: pan-y;
+}
+
+/* ── Bulk slider in image ─────────────────────────────── */
+.card-bulk-slider-wrap {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+}
+
+.bulk-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  margin-top: 0.25rem;
+}
+
+.bulk-discount-label {
+  color: #ffd87a;
+  font-weight: 700;
+}
+
+.bulk-qty-label {
+  color: #fff;
 }
