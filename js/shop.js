@@ -323,15 +323,14 @@ function collectTagGroupsFromItems() {
     return `<a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a>`;
   }
 
-  function buildBulkCardExtension(item) {
+function buildBulkCardExtension(item) {
     return `
       <div class="bulk-controls" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
-        <div class="bulk-topline">
-          <span class="bulk-label">Quantity:</span>
-          <strong class="bulk-qty" data-bulk-qty>${BULK_MIN_QTY}</strong>
-        </div>
         <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity for ${escHtml(item.name)}" />
-        <div class="bulk-pricing">Total: <span class="bulk-total" data-bulk-total>${(Number(item.price) || 0).toLocaleString()}</span></div>
+        <div class="bulk-summary">
+          <span class="bulk-qty-label">Qty: <strong data-bulk-qty>${BULK_MIN_QTY}</strong></span>
+          <span class="bulk-discount-label" data-bulk-discount></span>
+        </div>
       </div>`;
   }
 
@@ -377,18 +376,24 @@ function collectTagGroupsFromItems() {
       el.addEventListener("keydown", event => event.stopPropagation());
     });
 
-    grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
-      const slider = container.querySelector("[data-bulk-slider]");
-      const qty = container.querySelector("[data-bulk-qty]");
-      const total = container.querySelector("[data-bulk-total]");
-      const unitPrice = Number(container.dataset.unitPrice) || 0;
+       grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
+      const slider   = container.querySelector("[data-bulk-slider]");
+      const qtyEl    = container.querySelector("[data-bulk-qty]");
+      const discEl   = container.querySelector("[data-bulk-discount]");
 
-      if (!slider || !qty || !total) return;
+      if (!slider || !qtyEl) return;
+
+      const getDiscount = qty => {
+        if (qty < 5)  return 0;
+        if (qty >= 10) return 20;
+        return 10 + (qty - 5) * 2; // 5→10%, 6→12%, 7→14%, 8→16%, 9→18%, 10→20%
+      };
 
       const updateBulkDisplay = () => {
-        const currentQty = Number(slider.value) || BULK_MIN_QTY;
-        qty.textContent = String(currentQty);
-        total.textContent = (unitPrice * currentQty).toLocaleString();
+        const q        = Number(slider.value) || BULK_MIN_QTY;
+        const discount = getDiscount(q);
+        qtyEl.textContent  = String(q);
+        discEl.textContent = discount > 0 ? `${discount}% off` : "";
       };
 
       slider.addEventListener("input", updateBulkDisplay);
