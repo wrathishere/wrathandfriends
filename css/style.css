@@ -712,13 +712,18 @@ body {
 }
 
 .bulk-topline,
-.bulk-pricing {
+.bulk-summary {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.72rem;
+  align-items: center;
+  font-size: 0.65rem;
   color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.bulk-discount-label {
+  font-weight: 700;
+  color: var(--gold);
 }
 
 .bulk-qty,
