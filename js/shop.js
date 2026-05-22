@@ -74,7 +74,7 @@
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}">💰 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>💰 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -279,8 +279,6 @@ function collectTagGroupsFromItems() {
     const base = buildBaseCardParts(item);
     const categoryExtension = buildCategoryCardExtension(item);
 
-    const isWeapon = item.category === "weapon";
-
     return `
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
@@ -292,19 +290,16 @@ function collectTagGroupsFromItems() {
           <div class="card-footer">
             ${base.priceMarkup}
           </div>
-          ${isWeapon ? "" : categoryExtension}
+          ${categoryExtension}
           ${base.tagsHTML}
         </div>
       </article>`;
   }
 
   function buildBaseCardParts(item) {
-    const weaponBtnHTML = item.category === "weapon"
-      ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
-      : "";
     const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtnHTML}</div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div>${weaponBtnHTML}</div>`;
+      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/></div>`
+      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
 
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
@@ -323,16 +318,7 @@ function collectTagGroupsFromItems() {
     return `<a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a>`;
   }
 
-function buildBulkCardExtension(item) {
-    return `
-      <div class="bulk-controls" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
-        <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity for ${escHtml(item.name)}" />
-        <div class="bulk-summary">
-          <span class="bulk-qty-label">Qty: <strong data-bulk-qty>${BULK_MIN_QTY}</strong></span>
-          <span class="bulk-discount-label" data-bulk-discount></span>
-        </div>
-      </div>`;
-  }
+  function buildBulkCardExtension(item) { return ""; }
 
   function renderGrid() {
     const filtered = getFilteredItems();
@@ -376,24 +362,29 @@ function buildBulkCardExtension(item) {
       el.addEventListener("keydown", event => event.stopPropagation());
     });
 
-       grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
-      const slider   = container.querySelector("[data-bulk-slider]");
-      const qtyEl    = container.querySelector("[data-bulk-qty]");
-      const discEl   = container.querySelector("[data-bulk-discount]");
+    grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
+      const slider    = container.querySelector("[data-bulk-slider]");
+      const qtyEl     = container.querySelector("[data-bulk-qty]");
+      const discEl    = container.querySelector("[data-bulk-discount]");
+      const card      = container.closest(".item-card");
+      const priceEl   = card ? card.querySelector("[data-bulk-price]") : null;
+      const unitPrice = Number(container.dataset.unitPrice) || 0;
 
       if (!slider || !qtyEl) return;
 
       const getDiscount = qty => {
-        if (qty < 5)  return 0;
+        if (qty < 5)   return 0;
         if (qty >= 10) return 20;
-        return 10 + (qty - 5) * 2; // 5→10%, 6→12%, 7→14%, 8→16%, 9→18%, 10→20%
+        return 10 + (qty - 5) * 2;
       };
 
       const updateBulkDisplay = () => {
         const q        = Number(slider.value) || BULK_MIN_QTY;
         const discount = getDiscount(q);
+        const price    = discount > 0 ? Math.round(unitPrice * (1 - discount / 100)) : unitPrice;
         qtyEl.textContent  = String(q);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
+        if (priceEl) priceEl.textContent = `💰 ${price.toLocaleString()}`;
       };
 
       slider.addEventListener("input", updateBulkDisplay);
