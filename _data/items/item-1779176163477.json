@@ -3,7 +3,7 @@
   "price": 250,
   "category": "bulk",
   "level": 0,
-  "onSale": false,
+  "onSale": true,
   "salePrice": 180,
   "globalSaleOn": false,
   "salePricePct": null,
