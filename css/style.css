@@ -213,7 +213,7 @@ body {
   flex-direction: column;
   box-shadow: 0 2px 12px var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: 1 / 1;        /* keeps every card a perfect square */
 }
 
@@ -240,6 +240,7 @@ body {
   height: 220px;
   flex-shrink: 0;
   overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: #f0e8d8;
   display: flex;
   align-items: center;
@@ -718,13 +719,10 @@ body {
 /* ── Bulk slider inside image ────────────────────────────── */
 .card-bulk-slider-wrap {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 0.6rem;
   left: 0.75rem;
   right: 0.75rem;
   z-index: 2;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.15rem;
 }
 
 .bulk-slider {
