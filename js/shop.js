@@ -460,18 +460,38 @@ function attachCardListeners() {}
     const wholesale = splitRecommendationList(row["WholeSale Buy Suggestion"]);
 
     reportContent.innerHTML = `
-      <h2>PLAYER REPORT — ${escHtml(selectedName)}</h2>
-      <p><strong>Missing Manufacturing:</strong> ${escHtml(row["Missing Manufacturing"] || "0")}</p>
-      <p><strong>Missing Retail:</strong> ${escHtml(row["Missing Retail"] || "0")}</p>
-      <p><strong>Missing Wholesale:</strong> ${escHtml(row["Missing Wholesale"] || "0")}</p>
-      <p><strong>Total Missing:</strong> ${escHtml(row["Missing Total"] || "0")}</p>
-      <hr />
-      <h3>Recommended Manufacturing Purchases</h3>
-      ${listHTML(manufacturing)}
-      <h3>Recommended Retail Purchases</h3>
-      ${listHTML(retail)}
-      <h3>Recommended Wholesale Purchases</h3>
-      ${listHTML(wholesale)}
+      <div class="report-header">
+        <h2 class="report-welcome">Welcome, ${escHtml(selectedName)}!</h2>
+        <p class="report-total-missing">You are just <strong>${escHtml(row["Missing Total"] || "0")}</strong> tokens away!</p>
+      </div>
+      <div class="report-missing-row">
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Manufacturing</span>
+          <span class="report-missing-value">${escHtml(row["Missing Manufacturing"] || "0")}</span>
+        </div>
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Retail</span>
+          <span class="report-missing-value">${escHtml(row["Missing Retail"] || "0")}</span>
+        </div>
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Wholesale</span>
+          <span class="report-missing-value">${escHtml(row["Missing Wholesale"] || "0")}</span>
+        </div>
+      </div>
+      <div class="report-columns">
+        <div class="report-col">
+          <h3>Manufacturing</h3>
+          ${listHTML(manufacturing)}
+        </div>
+        <div class="report-col">
+          <h3>Retail</h3>
+          ${listHTML(retail)}
+        </div>
+        <div class="report-col">
+          <h3>Wholesale</h3>
+          ${listHTML(wholesale)}
+        </div>
+      </div>
       <button id="sort-shop-btn" class="sort-shop-btn" type="button">Sort Shop For Me</button>`;
 
     reportBackdrop.removeAttribute("hidden");
