@@ -19,44 +19,163 @@
       <select id="typeFilter" class="select"><option value="all">All Types</option></select>
     </section>
 
-    <section id="grid" class="grid" aria-live="polite"></section>
-    <div id="empty" class="empty" hidden>No weapons match your search.</div>
+    <section id="grid" class="grid" aria-live="polite">
+      <div class="loading-state">Loading armory data…</div>
+    </section>
   </main>
 
   <script src="items.js"></script>
   <script>
     let weapons = [];
-    const grid = document.getElementById('grid');
-    const empty = document.getElementById('empty');
-    const search = document.getElementById('search');
+    const grid       = document.getElementById('grid');
+    const search     = document.getElementById('search');
     const typeFilter = document.getElementById('typeFilter');
 
-    function cardHtml(w) {
-      const link = w.link ? `<a class="link" href="${w.link}">View details →</a>` : '';
-      const image = w.image ? `<img loading="lazy" src="${w.image}" alt="${w.name}" />` : '🗡️';
-      return `<article class="card"><div class="thumb">${image}</div><div class="meta"><h2 class="name">${w.name}</h2><p class="type">${w.type}</p>${link}</div></article>`;
+    // Stat value at a given weapon level
+    // Level 1 = base; each level after adds the increase
+    function atLevel(base, inc, level) {
+      return Math.round(base + inc * (level - 1));
+    }
+
+    // Build the stats block HTML for a weapon at a given level
+    function statsHtml(w, level) {
+      const dmgTypes = [
+        ['Slash',     w.slash_base,     w.slash_increase],
+        ['Spirit',    w.spirit_base,    w.spirit_increase],
+        ['Frost',     w.frost_base,     w.frost_increase],
+        ['Fire',      w.fire_base,      w.fire_increase],
+        ['Lightning', w.lightning_base, w.lightning_increase],
+      ];
+
+      let html = '';
+
+      dmgTypes.forEach(([label, base, inc]) => {
+        if (base <= 0 && inc <= 0) return;
+        const val = atLevel(base, inc, level);
+        const sub = inc > 0 ? `(+${inc}/lvl)` : '';
+        html += `<div class="stat-row">
+          <span class="stat-label-text">${label}</span>
+          <span class="stat-value">${val}<span class="stat-sub">${sub}</span></span>
+        </div>`;
+      });
+
+      if (w.durability_base > 0) {
+        const val = atLevel(w.durability_base, w.durability_increase, level);
+        const sub = w.durability_increase > 0 ? `(+${w.durability_increase}/lvl)` : '';
+        html += `<div class="stat-row">
+          <span class="stat-label-text">Durability</span>
+          <span class="stat-value">${val}<span class="stat-sub">${sub}</span></span>
+        </div>`;
+      }
+
+      if (w.stamina  > 0) html += `<div class="stat-row"><span class="stat-label-text">Stamina</span><span class="stat-value">${w.stamina}</span></div>`;
+      if (w.eitr     > 0) html += `<div class="stat-row"><span class="stat-label-text">Eitr</span><span class="stat-value">${w.eitr}</span></div>`;
+      if (w.quantity > 0) html += `<div class="stat-row"><span class="stat-label-text">Quantity</span><span class="stat-value">${w.quantity}</span></div>`;
+
+      return html;
+    }
+
+    // Build a full card HTML string
+    function cardHtml(w, idx) {
+      const numericLevels = w.levels_available.map(Number).filter(n => !isNaN(n) && n > 0);
+      const maxLevel      = numericLevels.length ? Math.max(...numericLevels) : 10;
+      const levelsNote    = w.levels_available.length ? `Available at levels: ${w.levels_available.join(', ')}` : '';
+
+      return `<article class="card">
+        <div class="card-top">
+          <div class="card-name-block">
+            <h2 class="name">${w.name}</h2>
+            <p class="type">${w.type}</p>
+          </div>
+          <div class="thumb">
+            <img
+              src="${w.image}"
+              alt="${w.name}"
+              loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+            />
+            <span class="no-img" style="display:none">⚔️</span>
+          </div>
+        </div>
+
+        <div class="card-body" id="stats-${idx}">
+          ${statsHtml(w, 1)}
+        </div>
+
+        <div class="card-footer">
+          <div class="slider-label">
+            <span class="slider-label-text">Weapon Level</span>
+            <span class="slider-badge" id="badge-${idx}">LVL 1</span>
+          </div>
+          <input
+            type="range"
+            class="level-slider"
+            min="1" max="${maxLevel}" step="1" value="1"
+            id="slider-${idx}"
+          />
+          ${levelsNote ? `<div class="levels-note">${levelsNote}</div>` : ''}
+        </div>
+      </article>`;
+    }
+
+    // Attach slider event listeners after cards are rendered
+    function attachSliders() {
+      weapons.forEach((w, idx) => {
+        const slider  = document.getElementById(`slider-${idx}`);
+        const badge   = document.getElementById(`badge-${idx}`);
+        const statsEl = document.getElementById(`stats-${idx}`);
+        if (!slider) return;
+        slider.addEventListener('input', () => {
+          const lvl = parseInt(slider.value, 10);
+          badge.textContent = `LVL ${lvl}`;
+          statsEl.innerHTML = statsHtml(w, lvl);
+        });
+      });
     }
 
     function render() {
       const q = search.value.trim().toLowerCase();
       const t = typeFilter.value;
-      const filtered = weapons.filter(w => (t === 'all' || w.type === t) && (!q || w.name.toLowerCase().includes(q)));
-      grid.innerHTML = filtered.map(cardHtml).join('');
-      empty.hidden = filtered.length > 0;
+      const filtered = weapons.filter(w =>
+        (t === 'all' || w.type === t) &&
+        (!q || w.name.toLowerCase().includes(q))
+      );
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty">No weapons match your search.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered
+        .map(w => cardHtml(w, weapons.indexOf(w)))
+        .join('');
+
+      attachSliders();
     }
 
     function loadTypeFilter() {
-      const types = [...new Set(weapons.map(w => w.type))].sort((a,b)=>a.localeCompare(b));
-      typeFilter.innerHTML = '<option value="all">All Types</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
+      const types = [...new Set(weapons.map(w => w.type))].sort((a, b) => a.localeCompare(b));
+      typeFilter.innerHTML =
+        `<option value="all">All Types</option>` +
+        types.map(t => `<option value="${t}">${t}</option>`).join('');
     }
 
     search.addEventListener('input', render);
     typeFilter.addEventListener('change', render);
 
     (async () => {
-      weapons = await loadWeaponShowcase();
-      loadTypeFilter();
-      render();
+      try {
+        weapons = await loadWeaponShowcase();
+        loadTypeFilter();
+        render();
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="error-state">
+          ⚠️ Could not load weapon data.<br/>
+          <small>Make sure SHEET_ID is set in items.js and the sheet is published publicly.</small><br/><br/>
+          <small style="opacity:.5">${err.message}</small>
+        </div>`;
+      }
     })();
   </script>
 </body>
