@@ -74,7 +74,7 @@
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}">💰 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>💰 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
