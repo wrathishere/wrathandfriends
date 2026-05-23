@@ -69,12 +69,12 @@
     if (onSale) {
       return `
         <div class="price-wrap">
-          <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
-         <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.category === "bulk" ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-original">💰 ${item.price.toLocaleString()}</span>
+          <span class="price-sale${large ? " price-sale-lg" : ""}">💰 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>💰 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -283,7 +283,6 @@ function collectTagGroupsFromItems() {
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
-        <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
         ${base.media}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
@@ -309,9 +308,10 @@ function collectTagGroupsFromItems() {
            </div>
          </div>`
       : "";
+    const badge = `<div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>`;
     const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
+      ? `<div class="card-img-wrap">${badge}<img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
+      : `<div class="card-img-wrap">${badge}<div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
 
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
@@ -373,8 +373,6 @@ function collectTagGroupsFromItems() {
       const card      = container.closest(".item-card");
       const priceEl   = card ? card.querySelector("[data-bulk-price]") : null;
       const unitPrice = Number(container.dataset.unitPrice) || 0;
-      const saleAttr  = priceEl ? priceEl.dataset.salePriceUnit : null;
-      const basePrice = saleAttr ? Number(saleAttr) : unitPrice;
 
       if (!slider || !qtyEl) return;
 
@@ -384,14 +382,15 @@ function collectTagGroupsFromItems() {
         return 10 + (qty - 5) * 2;
       };
 
-     const updateBulkDisplay = () => {
+      const updateBulkDisplay = () => {
         const q        = Number(slider.value) || BULK_MIN_QTY;
         const discount = getDiscount(q);
-        const total    = Math.round(basePrice * q * (1 - discount / 100));
+        const price    = discount > 0 ? Math.round(unitPrice * (1 - discount / 100)) : unitPrice;
         qtyEl.textContent  = String(q);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
-        if (priceEl) priceEl.textContent = `🪙 ${total.toLocaleString()}`;
+        if (priceEl) priceEl.textContent = `💰 ${price.toLocaleString()}`;
       };
+
       slider.addEventListener("input", updateBulkDisplay);
       updateBulkDisplay();
     });
