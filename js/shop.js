@@ -26,6 +26,11 @@
   // <script>window.PLAYER_SHEET_CSV = "https://docs.google.com/.../pub?output=csv";</script>
   const PLAYER_SHEET_CSV = window.PLAYER_SHEET_CSV || "";
 
+  const WEAPON_BUTTON_LABEL = "Check Available Weapons";
+  const WEAPON_PAGE_URL = window.WEAPON_PAGE_URL || "/checkweaponstat/index.html";
+  const BULK_MIN_QTY = 1;
+  const BULK_MAX_QTY = 32;
+
   // ── DOM refs ───────────────────────────────────────────
   const grid = document.getElementById("shop-grid");
   const emptyState = document.getElementById("empty-state");
@@ -64,12 +69,12 @@
     if (onSale) {
       return `
         <div class="price-wrap">
-          <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? " price-sale-lg" : ""}">💰 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
+          <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.category === "bulk" ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}">💰 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -271,29 +276,52 @@ function collectTagGroupsFromItems() {
   function buildCard(item) {
     const { onSale } = getSaleInfo(item);
     const recommendationScore = getRecommendationScore(item);
-
-    const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-emoji\\'>${item.emoji}</div>'"/></div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
-
-    const tagsHTML = item.tags.length
-      ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
-      : "";
+    const base = buildBaseCardParts(item);
+    const categoryExtension = buildCategoryCardExtension(item);
 
     return `
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
-        <div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>
-        ${media}
+        ${base.media}
         <div class="card-info">
           <h2 class="card-name">${escHtml(item.name)}</h2>
           <div class="card-footer">
-            ${priceHTML(item)}
+            ${base.priceMarkup}
           </div>
-          ${tagsHTML}
+          ${categoryExtension}
+          ${base.tagsHTML}
         </div>
       </article>`;
+  }
+
+  function buildBaseCardParts(item) {
+    const weaponBtn = item.category === "weapon"
+      ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
+      : "";
+    const bulkSlider = item.category === "bulk"
+      ? `<div class="card-bulk-slider-wrap" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
+           <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity" />
+           <div class="bulk-summary">
+             <span class="bulk-qty-label">Qty: <strong data-bulk-qty>${BULK_MIN_QTY}</strong></span>
+             <span class="bulk-discount-label" data-bulk-discount></span>
+           </div>
+         </div>`
+      : "";
+    const badge = `<div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>`;
+    const media = item.image
+      ? `<div class="card-img-wrap">${badge}<img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
+      : `<div class="card-img-wrap">${badge}<div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
+
+    const tagsHTML = item.tags.length
+      ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
+      : "";
+
+    return { media, tagsHTML, priceMarkup: priceHTML(item) };
+  }
+
+  function buildCategoryCardExtension(item) {
+    return "";
   }
 
   function renderGrid() {
@@ -315,18 +343,48 @@ function collectTagGroupsFromItems() {
     });
 
     attachCardListeners();
+    attachCategoryCardListeners();
   }
 
-  function attachCardListeners() {
-    grid.querySelectorAll(".item-card").forEach(card => {
-      const id = parseInt(card.dataset.id, 10);
-      card.addEventListener("click", () => openModal(id));
-      card.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openModal(id);
-        }
-      });
+function attachCardListeners() {}
+
+
+  function attachCategoryCardListeners() {
+    grid.querySelectorAll(".card-action-btn, .bulk-slider").forEach(el => {
+      el.addEventListener("click", event => event.stopPropagation());
+      el.addEventListener("keydown", event => event.stopPropagation());
+    });
+
+    grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
+      const slider    = container.querySelector("[data-bulk-slider]");
+      const qtyEl     = container.querySelector("[data-bulk-qty]");
+      const discEl    = container.querySelector("[data-bulk-discount]");
+      const card      = container.closest(".item-card");
+      const priceEl   = card ? card.querySelector("[data-bulk-price]") : null;
+      const unitPrice = Number(container.dataset.unitPrice) || 0;
+
+      if (!slider || !qtyEl) return;
+
+      const getDiscount = qty => {
+        if (qty < 5)   return 0;
+        if (qty >= 10) return 20;
+        return 10 + (qty - 5) * 2;
+      };
+
+      const saleAttr  = priceEl ? priceEl.dataset.salePriceUnit : null;
+      const basePrice = saleAttr ? Number(saleAttr) : unitPrice;
+
+      const updateBulkDisplay = () => {
+        const q        = Number(slider.value) || BULK_MIN_QTY;
+        const discount = getDiscount(q);
+        const total    = Math.round(basePrice * q * (1 - discount / 100));
+        qtyEl.textContent  = String(q);
+        discEl.textContent = discount > 0 ? `${discount}% off` : "";
+        if (priceEl) priceEl.textContent = `🪙 ${total.toLocaleString()}`;
+      };
+
+      slider.addEventListener("input", updateBulkDisplay);
+      updateBulkDisplay();
     });
   }
 
@@ -402,18 +460,38 @@ function collectTagGroupsFromItems() {
     const wholesale = splitRecommendationList(row["WholeSale Buy Suggestion"]);
 
     reportContent.innerHTML = `
-      <h2>PLAYER REPORT — ${escHtml(selectedName)}</h2>
-      <p><strong>Missing Manufacturing:</strong> ${escHtml(row["Missing Manufacturing"] || "0")}</p>
-      <p><strong>Missing Retail:</strong> ${escHtml(row["Missing Retail"] || "0")}</p>
-      <p><strong>Missing Wholesale:</strong> ${escHtml(row["Missing Wholesale"] || "0")}</p>
-      <p><strong>Total Missing:</strong> ${escHtml(row["Missing Total"] || "0")}</p>
-      <hr />
-      <h3>Recommended Manufacturing Purchases</h3>
-      ${listHTML(manufacturing)}
-      <h3>Recommended Retail Purchases</h3>
-      ${listHTML(retail)}
-      <h3>Recommended Wholesale Purchases</h3>
-      ${listHTML(wholesale)}
+      <div class="report-header">
+        <h2 class="report-welcome">Welcome, ${escHtml(selectedName)}!</h2>
+        <p class="report-total-missing">You are just <strong>${escHtml(row["Missing Total"] || "0")}</strong> tokens away!</p>
+      </div>
+      <div class="report-missing-row">
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Manufacturing</span>
+          <span class="report-missing-value">${escHtml(row["Missing Manufacturing"] || "0")}</span>
+        </div>
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Retail</span>
+          <span class="report-missing-value">${escHtml(row["Missing Retail"] || "0")}</span>
+        </div>
+        <div class="report-missing-cell">
+          <span class="report-missing-label">Wholesale</span>
+          <span class="report-missing-value">${escHtml(row["Missing Wholesale"] || "0")}</span>
+        </div>
+      </div>
+      <div class="report-columns">
+        <div class="report-col">
+          <h3>Manufacturing</h3>
+          ${listHTML(manufacturing)}
+        </div>
+        <div class="report-col">
+          <h3>Retail</h3>
+          ${listHTML(retail)}
+        </div>
+        <div class="report-col">
+          <h3>Wholesale</h3>
+          ${listHTML(wholesale)}
+        </div>
+      </div>
       <button id="sort-shop-btn" class="sort-shop-btn" type="button">Sort Shop For Me</button>`;
 
     reportBackdrop.removeAttribute("hidden");

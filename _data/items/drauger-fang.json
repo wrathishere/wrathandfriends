@@ -16,5 +16,6 @@
     "Yagluth",
     "Blacksmith"
   ],
-  "saleType": "Per Item"
+  "saleType": "Per Item",
+  "saleTypeCustom": ""
 }
