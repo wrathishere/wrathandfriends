@@ -39,38 +39,25 @@
 
     // Build the stats block HTML for a weapon at a given level
     function statsHtml(w, level) {
-      const dmgTypes = [
-        ['Slash',     w.slash_base,     w.slash_increase],
-        ['Spirit',    w.spirit_base,    w.spirit_increase],
-        ['Frost',     w.frost_base,     w.frost_increase],
-        ['Fire',      w.fire_base,      w.fire_increase],
-        ['Lightning', w.lightning_base, w.lightning_increase],
-      ];
-
       let html = '';
 
-      dmgTypes.forEach(([label, base, inc]) => {
+      STAT_CONFIG.forEach(cfg => {
+        // Retrieve the values dynamically from our parsed spreadsheet object
+        const base = parseFloat(w.stats[cfg.base]) || 0;
+        const inc  = cfg.inc ? (parseFloat(w.stats[cfg.inc]) || 0) : 0;
+
+        // Skip rendering if this stat doesn't exist or is 0 for this item
         if (base <= 0 && inc <= 0) return;
+
+        // Keep the calculations running to scale the stats when you use the slider
         const val = atLevel(base, inc, level);
-        const sub = inc > 0 ? `(+${inc}/lvl)` : '';
+        
+        // Render only the stat label and the calculated value
         html += `<div class="stat-row">
-          <span class="stat-label-text">${label}</span>
-          <span class="stat-value">${val}<span class="stat-sub">${sub}</span></span>
+          <span class="stat-label-text">${cfg.label}</span>
+          <span class="stat-value">${val}</span>
         </div>`;
       });
-
-      if (w.durability_base > 0) {
-        const val = atLevel(w.durability_base, w.durability_increase, level);
-        const sub = w.durability_increase > 0 ? `(+${w.durability_increase}/lvl)` : '';
-        html += `<div class="stat-row">
-          <span class="stat-label-text">Durability</span>
-          <span class="stat-value">${val}<span class="stat-sub">${sub}</span></span>
-        </div>`;
-      }
-
-      if (w.stamina  > 0) html += `<div class="stat-row"><span class="stat-label-text">Stamina</span><span class="stat-value">${w.stamina}</span></div>`;
-      if (w.eitr     > 0) html += `<div class="stat-row"><span class="stat-label-text">Eitr</span><span class="stat-value">${w.eitr}</span></div>`;
-      if (w.quantity > 0) html += `<div class="stat-row"><span class="stat-label-text">Quantity</span><span class="stat-value">${w.quantity}</span></div>`;
 
       return html;
     }
