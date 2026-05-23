@@ -70,11 +70,11 @@
       return `
         <div class="price-wrap">
           <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? " price-sale-lg" : ""}">💰 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.category === "bulk" ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>💰 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>💰 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}">💰 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
