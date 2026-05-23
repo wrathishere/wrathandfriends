@@ -78,7 +78,7 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   height: 80%;
   object-fit: contain;
   /* Applies a realistic shadow conforming exactly to the outline of your transparent PNG */
-  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6)); 
+  filter: drop-shadow(0px 3px 2px rgba(0, 0, 0, 1)); 
 }
 .thumb .no-img {
   font-size: 1.5rem;
