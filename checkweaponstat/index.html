@@ -87,6 +87,8 @@
             <p class="type">${w.type}</p>
           </div>
           <div class="thumb">
+            <!-- Relocated Level Overlay -->
+            <span class="level-badge-overlay" id="badge-${idx}">1</span>
             <img
               src="${w.image}"
               alt="${w.name}"
@@ -102,9 +104,9 @@
         </div>
 
         <div class="card-footer">
+          <!-- Center-aligned and updated label -->
           <div class="slider-label">
-            <span class="slider-label-text">Weapon Level</span>
-            <span class="slider-badge" id="badge-${idx}">LVL 1</span>
+            <span class="slider-label-text">Change Equipment Level</span>
           </div>
           <input
             type="range"
@@ -126,7 +128,7 @@
         if (!slider) return;
         slider.addEventListener('input', () => {
           const lvl = parseInt(slider.value, 10);
-          badge.textContent = `LVL ${lvl}`;
+          badge.textContent = lvl; // Outputs just the raw number (e.g., "1")
           statsEl.innerHTML = statsHtml(w, lvl);
         });
       });
