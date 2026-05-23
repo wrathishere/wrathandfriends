@@ -63,7 +63,8 @@ function normalizeWeapon(row, weaponType) {
     eitr:                n(row["eitr"]),
     quantity:            n(row["Quantity Available"]),
     levels_available:    (row["levels available"] || "").split(",").map(s => s.trim()).filter(Boolean),
-    image:               `${IMG_BASE}/${row["Name"].trim().replace(/\s+/g, "_")}.png`,
+     // Points to the local "images" folder using the filename from the spreadsheet
+    image:               thumbFilename ? `images/${thumbFilename}` : "",
   };
 }
 
