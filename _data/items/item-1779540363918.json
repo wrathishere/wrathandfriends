@@ -1,0 +1,26 @@
+{
+  "name": "Overleveled Non-Magic Gemmed Weapons",
+  "price": 1400,
+  "category": "weapon",
+  "saleType": "Per Item",
+  "saleTypeCustom": "",
+  "onSale": false,
+  "salePrice": 1250,
+  "globalSaleOn": false,
+  "salePricePct": null,
+  "discountPct": 0,
+  "image": "images/gemmed_weapons.png",
+  "description": "",
+  "tags": [
+    "Bedazzled",
+    "Fader"
+  ],
+  "tagGroups": {
+    "Token": [
+      "Bedazzled"
+    ],
+    "Boss Kill": [
+      "Fader"
+    ]
+  }
+}
