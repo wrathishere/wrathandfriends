@@ -382,13 +382,16 @@ function collectTagGroupsFromItems() {
         return 10 + (qty - 5) * 2;
       };
 
+      const saleAttr  = priceEl ? priceEl.dataset.salePriceUnit : null;
+      const basePrice = saleAttr ? Number(saleAttr) : unitPrice;
+
       const updateBulkDisplay = () => {
         const q        = Number(slider.value) || BULK_MIN_QTY;
         const discount = getDiscount(q);
-        const price    = discount > 0 ? Math.round(unitPrice * (1 - discount / 100)) : unitPrice;
+        const total    = Math.round(basePrice * q * (1 - discount / 100));
         qtyEl.textContent  = String(q);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
-        if (priceEl) priceEl.textContent = `💰 ${price.toLocaleString()}`;
+        if (priceEl) priceEl.textContent = `💰 ${total.toLocaleString()}`;
       };
 
       slider.addEventListener("input", updateBulkDisplay);
