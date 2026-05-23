@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weapon Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1 class="title">Armory Archive</h1>
+    <p class="subtitle">Spreadsheet-powered weapon codex</p>
+    <input id="search" class="search" placeholder="Search weapon name..." />
+    <div id="groups"></div>
+    <p id="empty" class="empty" hidden>No weapons found.</p>
+  </main>
+
+  <script>
+    window.WEAPON_SHEET_CSV = "https://docs.google.com/spreadsheets/d/1Z09iAqbN-d0h7Jm4LCGG2BDoEJY-ZWZwyFFf6QrQloQ/gviz/tq?tqx=out:csv&sheet=Sheet4";
+  </script>
+  <script src="items.js"></script>
+  <script>
+    const groupsEl = document.getElementById('groups');
+    const emptyEl = document.getElementById('empty');
+    const searchEl = document.getElementById('search');
+    let weapons = [];
+
+    function cardHtml(w) {
+      const icon = w.icon ? `<img src="${w.icon}" alt="${w.name} icon" loading="lazy">` : '⚔️';
+      const statImg = w.statImage ? `<img src="${w.statImage}" alt="${w.name} stats" loading="lazy">` : '<div class="stat-fallback">No stat screenshot</div>';
+
+      const groups = Object.entries(STAT_GROUPS).map(([groupName, statNames]) => {
+        const stats = statNames
+          .map(stat => `<li><span>${stat}</span><strong>${w.stats[stat] ?? '-'}</strong></li>`)
+          .join('');
+        return `<section class="stat-group"><h4>${groupName}</h4><ul>${stats}</ul></section>`;
+      }).join('');
+
+      return `<article class="weapon-card">
+        <div class="card-top">
+          <h3>${w.name}</h3>
+          <p>${w.type}</p>
+          <div class="icon-wrap">${icon}</div>
+        </div>
+        <div class="card-bottom">${statImg}</div>
+        <div class="stats-panel">${groups}</div>
+      </article>`;
+    }
+
+    function render() {
+      const q = searchEl.value.trim().toLowerCase();
+      const filtered = weapons.filter(w => !q || w.name.toLowerCase().includes(q));
+      const byType = filtered.reduce((acc, w) => {
+        (acc[w.type] ||= []).push(w);
+        return acc;
+      }, {});
+
+      const sections = Object.keys(byType).sort((a, b) => a.localeCompare(b)).map(type => `
+        <section class="type-section">
+          <h2>${type}</h2>
+          <div class="weapon-grid">${byType[type].map(cardHtml).join('')}</div>
+        </section>
+      `).join('');
+
+      groupsEl.innerHTML = sections;
+      emptyEl.hidden = filtered.length > 0;
+    }
+
+    searchEl.addEventListener('input', render);
+
+    (async () => {
+      try {
+        weapons = await loadWeaponsFromSheet();
+        render();
+      } catch (err) {
+        groupsEl.innerHTML = `<p class="empty">${err.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>
