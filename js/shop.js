@@ -297,9 +297,21 @@ function collectTagGroupsFromItems() {
   }
 
   function buildBaseCardParts(item) {
+    const weaponBtn = item.category === "weapon"
+      ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
+      : "";
+    const bulkSlider = item.category === "bulk"
+      ? `<div class="card-bulk-slider-wrap" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
+           <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity" />
+           <div class="bulk-summary">
+             <span class="bulk-qty-label">Qty: <strong data-bulk-qty>${BULK_MIN_QTY}</strong></span>
+             <span class="bulk-discount-label" data-bulk-discount></span>
+           </div>
+         </div>`
+      : "";
     const media = item.image
-      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/></div>`
-      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div></div>`;
+      ? `<div class="card-img-wrap"><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
+      : `<div class="card-img-wrap"><div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
 
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
@@ -309,16 +321,8 @@ function collectTagGroupsFromItems() {
   }
 
   function buildCategoryCardExtension(item) {
-    if (item.category === "weapon") return buildWeaponCardExtension();
-    if (item.category === "bulk") return buildBulkCardExtension(item);
     return "";
   }
-
-  function buildWeaponCardExtension() {
-    return `<a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a>`;
-  }
-
-  function buildBulkCardExtension(item) { return ""; }
 
   function renderGrid() {
     const filtered = getFilteredItems();
