@@ -293,6 +293,7 @@ body {
   border-radius: 999px;
   padding: 0.15rem 0.5rem;
   backdrop-filter: blur(4px);
+  z-index: 3;
 }
 
 /* sale badge */
