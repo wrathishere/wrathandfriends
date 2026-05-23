@@ -661,7 +661,7 @@ body {
 .rec-match{box-shadow:0 0 0 2px rgba(176,125,46,.45),0 8px 28px rgba(100,70,20,.18)}
 .report-backdrop{position:fixed;inset:0;background:rgba(20,16,12,.55);display:grid;place-items:center;z-index:60}
 .report-backdrop[hidden]{display:none !important}
-.report-modal{position:relative;background:#fff;border-radius:16px;padding:1.2rem;max-width:560px;width:min(92vw,560px);max-height:86vh;overflow:auto}
+.report-modal{position:relative;background:#fff;border-radius:16px;padding:1.5rem 2rem;max-width:900px;width:min(95vw,900px);max-height:86vh;overflow:auto}
 .sort-shop-btn{margin-top:1rem;background:var(--gold);color:#fff;border:none;border-radius:10px;padding:.55rem .9rem;font-weight:700;cursor:pointer}
 @media (max-width:900px){.shop-layout{grid-template-columns:1fr}.tag-sidebar{position:relative;top:0}}
 
@@ -670,8 +670,8 @@ body {
 .sidebar-clear:hover{border-color:var(--gold-dim);color:var(--gold)}
 .player-report-controls{flex-wrap:wrap;justify-content:flex-end}
 .report-modal h2{font-size:1.15rem;color:var(--gold);margin-bottom:.5rem}
-.report-modal h3{font-size:.92rem;margin:.7rem 0 .3rem;color:var(--text-main)}
-.report-modal p,.report-modal li{font-size:.88rem;color:var(--text-main)}
+.report-modal h3{font-size:.82rem;margin:0 0 .5rem;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #eee;padding-bottom:.3rem}
+.report-modal p,.report-modal li{font-size:.82rem;color:var(--text-main)}
 
 .card-weapon-btn-wrap {
   position: absolute;
@@ -750,3 +750,16 @@ body {
   color: #ffd87a;
   font-weight: 700;
 }
+
+/* ── Report modal layout ─────────────────────────────── */
+.report-header{margin-bottom:1rem}
+.report-welcome{font-size:1.4rem;color:var(--gold);margin-bottom:0.15rem;font-weight:800}
+.report-total-missing{font-size:0.95rem;color:var(--text-muted);margin:0}
+.report-total-missing strong{color:var(--gold);font-size:1rem}
+.report-missing-row{display:flex;gap:1rem;margin-bottom:1.25rem;background:var(--bg-page,#f5efe4);border-radius:10px;padding:0.75rem 1rem}
+.report-missing-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.1rem}
+.report-missing-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)}
+.report-missing-value{font-size:1.5rem;font-weight:800;color:var(--gold)}
+.report-columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1rem}
+.report-col ul{padding-left:1rem;margin:0}
+.report-col li{font-size:0.82rem;padding:0.12rem 0;color:var(--text-main)}
