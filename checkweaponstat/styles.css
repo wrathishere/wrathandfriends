@@ -59,20 +59,20 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   font-size: .85rem;
 }
 
-/* Circular weapon image */
+/* Rounded Circle weapon image */
 .thumb {
-  width: 76px;         /* Increased size from 64px */
-  height: 76px;        /* Increased size from 64px */
-  border-radius: 12px; /* 12px gives a slightly rounded square look */
-  background: #543d2e; /* New container background color */
+  width: 76px;
+  height: 76px;
+  border-radius: 12px;
+  background: #543d2e;
   border: 2px solid var(--gold-dim);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative; 
 }
-
 .thumb img {
   width: 80%;
   height: 80%;
@@ -83,6 +83,17 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
 .thumb .no-img {
   font-size: 1.5rem;
   opacity: .55;
+}
+.level-badge-overlay {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  color: #f39c17; /* Specified level color */
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); /* High contrast drop shadow to stay readable on any image */
+  z-index: 5;
+  pointer-events: none; /* Allows clicks to pass through if needed */
 }
 
 /* Bottom half — stats panel */
@@ -125,14 +136,15 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
 }
 .slider-label {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: .45rem;
-  font-size: .82rem;
+  justify-content: center; /* Center-aligns the text */
+  margin-bottom: .55rem;
+  font-size: .85rem;
 }
 .slider-label-text {
-  color: #b88e42;
-  font-style: italic;
+  color: #fff9ee; /* Bright white-cream */
+  font-weight: 700; /* Bold */
+  font-style: normal; /* Non-italic */
+  text-align: center;
 }
 .slider-badge {
   background: rgba(180, 130, 40, 0.15);
