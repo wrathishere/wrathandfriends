@@ -38,21 +38,48 @@
     }
 
     // Build the stats block HTML for a weapon at a given level
+    // Build the stats block HTML dynamically (Safe Version)
     function statsHtml(w, level) {
       let html = '';
 
-      STAT_CONFIG.forEach(cfg => {
-        // Retrieve the values dynamically from our parsed spreadsheet object
-        const base = parseFloat(w.stats[cfg.base]) || 0;
-        const inc  = cfg.inc ? (parseFloat(w.stats[cfg.inc]) || 0) : 0;
+      // Helper function to safely fetch stats from either your old or new items.js structure
+      const getStat = (key) => {
+        if (w.stats && w.stats[key] !== undefined) return w.stats[key];
+        return w[key];
+      };
 
-        // Skip rendering if this stat doesn't exist or is 0 for this item
+      // Configuration of possible stats to look for
+      const STATS_TO_RENDER = [
+        { label: 'Slash',       base: 'slash_base',       inc: 'slash_increase' },
+        { label: 'Spirit',      base: 'spirit_base',      inc: 'spirit_increase' },
+        { label: 'Frost',       base: 'frost_base',       inc: 'frost_increase' },
+        { label: 'Fire',        base: 'fire_base',        inc: 'fire_increase' },
+        { label: 'Lightning',   base: 'lightning_base',   inc: 'lightning_increase' },
+        { label: 'Durability',  base: 'durability_base',  inc: 'durability_increase' },
+        { label: 'Block',       base: 'block_base',       inc: 'block_increase' },
+        { label: 'Armor',       base: 'armor_base',       inc: 'armor_increase' },
+        { label: 'Stamina',     base: 'Stamina' },
+        { label: 'Stamina',     base: 'stamina' },
+        { label: 'Eitr',        base: 'eitr' },
+        { label: 'Quantity',    base: 'Quantity Available' },
+        { label: 'Quantity',    base: 'quantity' }
+      ];
+
+      const renderedLabels = new Set();
+
+      STATS_TO_RENDER.forEach(cfg => {
+        // Prevent duplicate rows for the same label
+        if (renderedLabels.has(cfg.label)) return;
+
+        const base = parseFloat(getStat(cfg.base)) || 0;
+        const inc  = cfg.inc ? (parseFloat(getStat(cfg.inc)) || 0) : 0;
+
+        // Skip if stat doesn't exist
         if (base <= 0 && inc <= 0) return;
 
-        // Keep the calculations running to scale the stats when you use the slider
+        renderedLabels.add(cfg.label);
         const val = atLevel(base, inc, level);
         
-        // Render only the stat label and the calculated value
         html += `<div class="stat-row">
           <span class="stat-label-text">${cfg.label}</span>
           <span class="stat-value">${val}</span>
@@ -61,7 +88,6 @@
 
       return html;
     }
-
     // Build a full card HTML string
     function cardHtml(w, idx) {
       const maxLevel   = 200;
