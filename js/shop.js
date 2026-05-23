@@ -69,12 +69,12 @@
     if (onSale) {
       return `
         <div class="price-wrap">
-          <span class="price-original">💰 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? " price-sale-lg" : ""}">💰 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
+         <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.category === "bulk" ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>💰 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -373,6 +373,8 @@ function collectTagGroupsFromItems() {
       const card      = container.closest(".item-card");
       const priceEl   = card ? card.querySelector("[data-bulk-price]") : null;
       const unitPrice = Number(container.dataset.unitPrice) || 0;
+      const saleAttr  = priceEl ? priceEl.dataset.salePriceUnit : null;
+      const basePrice = saleAttr ? Number(saleAttr) : unitPrice;
 
       if (!slider || !qtyEl) return;
 
@@ -382,13 +384,13 @@ function collectTagGroupsFromItems() {
         return 10 + (qty - 5) * 2;
       };
 
-      const updateBulkDisplay = () => {
+     const updateBulkDisplay = () => {
         const q        = Number(slider.value) || BULK_MIN_QTY;
         const discount = getDiscount(q);
-        const total    = Math.round(unitPrice * q * (1 - discount / 100));
+        const total    = Math.round(basePrice * q * (1 - discount / 100));
         qtyEl.textContent  = String(q);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
-        if (priceEl) priceEl.textContent = `💰 ${total.toLocaleString()}`;
+        if (priceEl) priceEl.textContent = `🪙 ${total.toLocaleString()}`;
       };
       slider.addEventListener("input", updateBulkDisplay);
       updateBulkDisplay();
