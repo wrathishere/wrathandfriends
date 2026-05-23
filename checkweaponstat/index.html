@@ -77,9 +77,8 @@
 
     // Build a full card HTML string
     function cardHtml(w, idx) {
-      const numericLevels = w.levels_available.map(Number).filter(n => !isNaN(n) && n > 0);
-      const maxLevel      = numericLevels.length ? Math.max(...numericLevels) : 10;
-      const levelsNote    = w.levels_available.length ? `Available at levels: ${w.levels_available.join(', ')}` : '';
+      const maxLevel   = 200;
+      const levelsNote = w.levels_available.length ? `Available at levels: ${w.levels_available.join(', ')}` : '';
 
       return `<article class="card">
         <div class="card-top">
