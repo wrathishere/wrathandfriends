@@ -4,7 +4,7 @@
   "category": "bulk",
   "level": 0,
   "onSale": true,
-  "salePrice": 180,
+  "salePrice": 210,
   "globalSaleOn": false,
   "salePricePct": null,
   "discountPct": 0,
@@ -22,6 +22,6 @@
       "Moder"
     ]
   },
-  "saleType": "Per Set",
+  "saleType": "Per Stack",
   "saleTypeCustom": ""
 }
