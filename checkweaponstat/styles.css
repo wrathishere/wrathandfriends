@@ -50,7 +50,14 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
 .level-slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--gold);border:2px solid #1a1208;cursor:pointer;transition:background .15s,transform .12s}
 .level-slider::-webkit-slider-thumb:hover{background:var(--gold-dim);transform:scale(1.2)}
 .level-slider::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--gold);border:2px solid #1a1208;cursor:pointer}
-.levels-note{margin-top:.45rem;font-size:.76rem;color:#7d603f;font-style:italic;text-align:center}
+.levels-note {
+  margin-top: .45rem;
+  font-size: .76rem;
+  color: #c8bfae; /* Brighter parchment tone */
+  font-weight: 600; /* Bolder text weight */
+  font-style: italic;
+  text-align: center;
+}
 
 /* States */
 .loading-state{text-align:center;padding:3rem;color:#7d603f;font-style:italic;grid-column:1/-1;animation:pulse 1.6s ease-in-out infinite}
