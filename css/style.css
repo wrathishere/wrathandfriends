@@ -531,7 +531,7 @@ body {
 }
 
 .price-original {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-dim);
   text-decoration: line-through;
@@ -540,7 +540,7 @@ body {
 }
 
 .price-sale {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--red);
 }
