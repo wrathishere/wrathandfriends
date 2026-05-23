@@ -61,10 +61,10 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
 
 /* Circular weapon image */
 .thumb {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: #2b1811; /* Darker accent background inside circle */
+  width: 76px;         /* Increased size from 64px */
+  height: 76px;        /* Increased size from 64px */
+  border-radius: 12px; /* 12px gives a slightly rounded square look */
+  background: #543d2e; /* New container background color */
   border: 2px solid var(--gold-dim);
   display: flex;
   align-items: center;
@@ -72,10 +72,13 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   overflow: hidden;
   flex-shrink: 0;
 }
+
 .thumb img {
   width: 80%;
   height: 80%;
   object-fit: contain;
+  /* Applies a realistic shadow conforming exactly to the outline of your transparent PNG */
+  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6)); 
 }
 .thumb .no-img {
   font-size: 1.5rem;
