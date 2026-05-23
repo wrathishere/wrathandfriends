@@ -114,11 +114,11 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   border-bottom: none;
 }
 .stat-label-text {
-  color: #c8bfae;
+  color: #fffffc;
   font-weight: 600;
 }
 .stat-value {
-  color: #e8b84b;
+  color: #eb8a46;
   font-weight: 600;
 }
 .stat-sub {
