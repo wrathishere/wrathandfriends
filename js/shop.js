@@ -346,18 +346,7 @@ function collectTagGroupsFromItems() {
     attachCategoryCardListeners();
   }
 
-  function attachCardListeners() {
-    grid.querySelectorAll(".item-card").forEach(card => {
-      const id = parseInt(card.dataset.id, 10);
-      card.addEventListener("click", () => openModal(id));
-      card.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openModal(id);
-        }
-      });
-    });
-  }
+function attachCardListeners() {}
 
 
   function attachCategoryCardListeners() {
