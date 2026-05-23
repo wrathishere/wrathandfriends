@@ -647,7 +647,7 @@ body {
 .player-report-controls{display:flex;gap:.5rem;align-items:center;margin-left:auto}
 .player-select,.player-report-btn{border:1px solid var(--border);border-radius:10px;background:var(--bg-card);padding:.45rem .65rem;font-size:.8rem;color:var(--text-main)}
 .player-report-btn{cursor:pointer;font-weight:700}
-.shop-layout{max-width:1320px;margin:1.25rem auto 3rem;padding:0 2rem;display:grid;grid-template-columns:240px 1fr;gap:1rem}
+.shop-layout{max-width:1320px;margin:1.25rem auto 3rem;padding:0 1rem;display:grid;grid-template-columns:240px 1fr;gap:1rem}
 .shop-layout .shop-grid{max-width:none;margin:0;padding:0}
 .tag-sidebar{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem;align-self:start;position:sticky;top:90px}
 .sidebar-title{font-size:.9rem;color:var(--gold);margin-bottom:.4rem}
