@@ -44,6 +44,10 @@ function parseCSV(text) {
 // ── NORMALIZE ROW → WEAPON OBJECT ─────────────────────────────────────────────
 function normalizeWeapon(row, weaponType) {
   const n = v => parseFloat(v) || 0;
+  
+  // Get the filename from the "thumbnail" column
+  const thumbFilename = row["thumbnail"] ? row["thumbnail"].trim() : "";
+
   return {
     name:                row["Name"].trim(),
     type:                weaponType,
@@ -63,7 +67,8 @@ function normalizeWeapon(row, weaponType) {
     eitr:                n(row["eitr"]),
     quantity:            n(row["Quantity Available"]),
     levels_available:    (row["levels available"] || "").split(",").map(s => s.trim()).filter(Boolean),
-     // Points to the local "images" folder using the filename from the spreadsheet
+    
+    // Points to the local "images" folder using the filename from the spreadsheet
     image:               thumbFilename ? `images/${thumbFilename}` : "",
   };
 }
