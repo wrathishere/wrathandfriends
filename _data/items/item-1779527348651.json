@@ -1,0 +1,26 @@
+{
+  "name": "Crysta",
+  "price": 100,
+  "category": "bulk",
+  "saleType": "Per Stack",
+  "saleTypeCustom": "",
+  "onSale": false,
+  "salePrice": 80,
+  "globalSaleOn": false,
+  "salePricePct": null,
+  "discountPct": 0,
+  "image": "images/crystal.png",
+  "description": "",
+  "tags": [
+    "Crystal Clear",
+    "Bonemass"
+  ],
+  "tagGroups": {
+    "Token": [
+      "Crystal Clear"
+    ],
+    "Boss Kill": [
+      "Bonemass"
+    ]
+  }
+}
