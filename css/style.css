@@ -711,20 +711,23 @@ body {
 .bulk-qty,
 
 
-.bulk-slider {
-  width: 100%;
-  margin: 0.35rem 0;
-  accent-color: var(--gold);
-  touch-action: pan-y;
-}
+
 
 /* ── Bulk slider in image ─────────────────────────────── */
+
+/* ── Bulk slider inside image ────────────────────────────── */
 .card-bulk-slider-wrap {
   position: absolute;
   bottom: 0.6rem;
   left: 0.75rem;
   right: 0.75rem;
   z-index: 2;
+}
+
+.bulk-slider {
+  width: 100%;
+  cursor: pointer;
+  accent-color: var(--gold);
 }
 
 .bulk-summary {
@@ -735,14 +738,10 @@ body {
   font-weight: 600;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .bulk-discount-label {
   color: #ffd87a;
   font-weight: 700;
-}
-
-.bulk-qty-label {
-  color: #fff;
 }
