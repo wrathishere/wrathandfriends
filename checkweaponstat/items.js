@@ -21,56 +21,83 @@ async function fetchSheetCSV(tabName) {
   return res.text();
 }
 
-// ── PARSE CSV ─────────────────────────────────────────────────────────────────
+// ── CSV LINE PARSER (Handles quotes and commas) ───────────────────────────────
+function parseCSVLine(line) {
+  const vals = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i + 1] === '"') {
+        cur += '"';
+        i++; // skip next quote
+      } else {
+        inQ = !inQ;
+      }
+    } else if (ch === ',' && !inQ) {
+      vals.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  vals.push(cur.trim());
+  return vals;
+}
+
+// ── TRANSPOSE PARSER (Converts Weapon Columns to Rows) ────────────────────────
 function parseCSV(text) {
   const lines = text.trim().split("\n");
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim());
-  return lines.slice(1).map(line => {
-    const vals = [];
-    let cur = "", inQ = false;
-    for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; continue; }
-      if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ""; }
-      else cur += ch;
-    }
-    vals.push(cur.trim());
+  if (lines.length < 1) return [];
+
+  // Parse lines into a 2D grid
+  const grid = lines.map(line => parseCSVLine(line));
+  if (grid.length === 0 || grid[0].length < 2) return [];
+
+  const weaponsCount = grid[0].length;
+  const rows = [];
+
+  // Column index 0 has key labels (e.g. "Name", "durability_base").
+  // Columns 1 to N represent individual weapon columns.
+  for (let colIdx = 1; colIdx < weaponsCount; colIdx++) {
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
-    return obj;
-  }).filter(r => r["Name"] && r["Name"].trim() !== "");
+    for (let rowIdx = 0; rowIdx < grid.length; rowIdx++) {
+      const key = grid[rowIdx][0];
+      const val = grid[rowIdx][colIdx];
+      if (key !== undefined && key !== "") {
+        obj[key.trim()] = val !== undefined ? val.trim() : "";
+      }
+    }
+    // Only parse if column has a name
+    if (obj["Name"] && obj["Name"].trim() !== "") {
+      rows.push(obj);
+    }
+  }
+  return rows;
 }
 
 // ── NORMALIZE ROW → WEAPON OBJECT ─────────────────────────────────────────────
 function normalizeWeapon(row, weaponType) {
   const n = v => parseFloat(v) || 0;
-  
-  // Get the filename from the "thumbnail" column
   const thumbFilename = row["thumbnail"] ? row["thumbnail"].trim() : "";
 
-  return {
-    name:                row["Name"].trim(),
+  const weapon = {
+    name:                row["Name"] ? row["Name"].trim() : "Unknown Item",
     type:                weaponType,
-    slash_base:          n(row["slash_base"]),
-    slash_increase:      n(row["slash_increase"]),
-    spirit_base:         n(row["spirit_base"]),
-    spirit_increase:     n(row["spirit_increase"]),
-    frost_base:          n(row["frost_base"]),
-    frost_increase:      n(row["frost_increase"]),
-    fire_base:           n(row["fire_base"]),
-    fire_increase:       n(row["fire_increase"]),
-    lightning_base:      n(row["lightning_base"]),
-    lightning_increase:  n(row["lightning_increase"]),
-    durability_base:     n(row["durability_base"]),
-    durability_increase: n(row["durability_increase"]),
-    stamina:             n(row["Stamina"]),
-    eitr:                n(row["eitr"]),
-    quantity:            n(row["Quantity Available"]),
     levels_available:    (row["levels available"] || "").split(",").map(s => s.trim()).filter(Boolean),
-    
-    // Points to the local "images" folder using the filename from the spreadsheet
+    // Fallback to local images folder or use remote GitHub folder
     image:               thumbFilename ? `images/${thumbFilename}` : "",
+    stats:               {} 
   };
+
+  // Automatically save all other spreadsheet rows as dynamic stats
+  Object.keys(row).forEach(key => {
+    if (["Name", "thumbnail", "levels available"].includes(key)) return;
+    const numVal = parseFloat(row[key]);
+    weapon.stats[key] = !isNaN(numVal) ? numVal : row[key].trim();
+  });
+
+  return weapon;
 }
 
 // ── LOAD ALL WEAPONS FROM ALL TABS ────────────────────────────────────────────
