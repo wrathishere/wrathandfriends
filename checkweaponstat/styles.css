@@ -187,13 +187,53 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   border: 2px solid #42261b;
   cursor: pointer;
 }
-.levels-note {
-  margin-top: .45rem;
-  font-size: .76rem;
-  color: #c8bfae;
-  font-weight: 600;
+/* Level buttons layout container */
+.level-buttons-container {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* "Available at levels" text label */
+.level-buttons-label {
+  font-size: 0.72rem;
+  color: #a08870;
   font-style: italic;
-  text-align: center;
+}
+
+/* Container for listing the buttons */
+.level-buttons-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Custom styled level buttons */
+.level-btn {
+  background: #4d4640; /* Custom button background */
+  border: 1px solid #735a40; /* Custom outline */
+  color: #f6a45a; /* Custom text color */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45); /* Inside inset shadow */
+  border-radius: 6px; /* Rounded rectangle shape */
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  transition: background-color 0.15s, transform 0.05s;
+}
+
+.level-btn:hover {
+  background: #5b534a; /* Slight hover highlight */
+}
+
+.level-btn:active {
+  transform: scale(0.95); /* Scale down slightly on click */
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.6); /* Deeper inset shadow when clicked */
 }
 
 /* States */
