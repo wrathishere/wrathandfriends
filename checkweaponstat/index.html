@@ -47,21 +47,35 @@
         return w[key];
       };
 
-      // Configuration of possible stats to look for
+      // Comprehensive list mapping all stats (including new entries)
       const STATS_TO_RENDER = [
-        { label: 'Slash',       base: 'slash_base',       inc: 'slash_increase' },
-        { label: 'Spirit',      base: 'spirit_base',      inc: 'spirit_increase' },
-        { label: 'Frost',       base: 'frost_base',       inc: 'frost_increase' },
-        { label: 'Fire',        base: 'fire_base',        inc: 'fire_increase' },
-        { label: 'Lightning',   base: 'lightning_base',   inc: 'lightning_increase' },
-        { label: 'Durability',  base: 'durability_base',  inc: 'durability_increase' },
-        { label: 'Block',       base: 'block_base',       inc: 'block_increase' },
-        { label: 'Armor',       base: 'armor_base',       inc: 'armor_increase' },
-        { label: 'Stamina',     base: 'Stamina' },
-        { label: 'Stamina',     base: 'stamina' },
-        { label: 'Eitr',        base: 'eitr' },
-        { label: 'Quantity',    base: 'Quantity Available' },
-        { label: 'Quantity',    base: 'quantity' }
+        { label: 'Slash',            base: 'slash_base',            inc: 'slash_increase' },
+        { label: 'Blunt',            base: 'blunt_base',            inc: 'blunt_increase' },
+        { label: 'Pierce',           base: 'pierce_base',           inc: 'pierce_increase' },
+        { label: 'Frost',            base: 'frost_base',            inc: 'frost_increase' },
+        { label: 'Fire',             base: 'fire_base',             inc: 'fire_increase' },
+        { label: 'Lightning',        base: 'lightning_base',        inc: 'lightning_increase' },
+        { label: 'Poison',           base: 'poison_base',           inc: 'poison_increase' },
+        { label: 'Spirit',           base: 'spirit_base',           inc: 'spirit_increase' },
+        { label: 'Chop',             base: 'chop_base',             inc: 'chop_increase' },
+        { label: 'Pickaxe',          base: 'pickaxe_base',          inc: 'pickaxe_increase' },
+        { label: 'Stagger',          base: 'stagger_base',          inc: 'stagger_increase' },
+        { label: 'Block Armor',      base: 'block_armor_base',      inc: 'block_armor_increase' },
+        { label: 'Block Force',      base: 'block_force_base',      inc: 'block_force_increase' },
+        { label: 'Knockback',        base: 'knockback_base',        inc: 'knockback_increase' },
+        { label: 'Shield Duration',  base: 'shield_duration_base',  inc: 'shield_duration_increase' },
+        { label: 'Summons',          base: 'summons_base',          inc: 'summons_increase' },
+        { label: 'Durability',       base: 'durability_base',       inc: 'durability_increase' },
+        
+        // Single values (non-scaling)
+        { label: 'Stamina Use',      base: 'use_stamina' },
+        { label: 'Stamina Use',      base: 'Stamina' },
+        { label: 'Eitr Use',         base: 'use_eitr' },
+        { label: 'Eitr Use',         base: 'eitr' },
+        { label: 'Parry Bonus',      base: 'parry_bonus' },
+        { label: 'Quantity',         base: 'Quantity Availble' }, // Handles spreadsheet typo safely
+        { label: 'Quantity',         base: 'Quantity Available' },
+        { label: 'Quantity',         base: 'quantity' }
       ];
 
       const renderedLabels = new Set();
@@ -73,7 +87,7 @@
         const base = parseFloat(getStat(cfg.base)) || 0;
         const inc  = cfg.inc ? (parseFloat(getStat(cfg.inc)) || 0) : 0;
 
-        // Skip if stat doesn't exist
+        // Skip if stat doesn't exist on this card
         if (base <= 0 && inc <= 0) return;
 
         renderedLabels.add(cfg.label);
