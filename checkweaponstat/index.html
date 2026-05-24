@@ -112,7 +112,7 @@
       const hasLevels = w.levels_available && w.levels_available.length > 0;
       const levelsHtml = hasLevels ? `
         <div class="level-buttons-container">
-          <span class="level-buttons-label">Available at levels:</span>
+          <span class="level-buttons-label">Select Level to Preview:</span>
           <div class="level-buttons-list">
             ${w.levels_available.map(lvl => `
               <button type="button" class="level-btn" onclick="setWeaponLevel(${idx}, ${lvl})">
