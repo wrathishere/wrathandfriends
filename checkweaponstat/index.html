@@ -47,7 +47,7 @@
         return w[key];
       };
 
-      // Comprehensive list mapping all stats (including new entries)
+      // Configuration of possible stats to look for (lowercased lookup keys)
       const STATS_TO_RENDER = [
         { label: 'Slash',            base: 'slash_base',            inc: 'slash_increase' },
         { label: 'Blunt',            base: 'blunt_base',            inc: 'blunt_increase' },
@@ -67,14 +67,14 @@
         { label: 'Summons',          base: 'summons_base',          inc: 'summons_increase' },
         { label: 'Durability',       base: 'durability_base',       inc: 'durability_increase' },
         
-        // Single values (non-scaling)
+        // Single values (non-scaling, lowercased keys)
         { label: 'Stamina Use',      base: 'use_stamina' },
-        { label: 'Stamina Use',      base: 'Stamina' },
+        { label: 'Stamina Use',      base: 'stamina' },
         { label: 'Eitr Use',         base: 'use_eitr' },
         { label: 'Eitr Use',         base: 'eitr' },
         { label: 'Parry Bonus',      base: 'parry_bonus' },
-        { label: 'Quantity',         base: 'Quantity Availble' }, // Handles spreadsheet typo safely
-        { label: 'Quantity',         base: 'Quantity Available' },
+        { label: 'Quantity',         base: 'quantity availble' }, // Safe typo fallback
+        { label: 'Quantity',         base: 'quantity available' },
         { label: 'Quantity',         base: 'quantity' }
       ];
 
