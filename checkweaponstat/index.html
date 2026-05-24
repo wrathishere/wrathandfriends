@@ -37,7 +37,6 @@
       return Math.round(base + inc * (level - 1));
     }
 
-    // Build the stats block HTML for a weapon at a given level
     // Build the stats block HTML dynamically (Safe Version)
     function statsHtml(w, level) {
       let html = '';
@@ -88,6 +87,7 @@
 
       return html;
     }
+
     // Global function to programmatically update weapon level via buttons
     window.setWeaponLevel = function(idx, lvl) {
       const slider = document.getElementById(`slider-${idx}`);
@@ -159,6 +159,65 @@
           />
         </div>
       </article>`;
+    }
+
+    // Attach slider event listeners after cards are rendered
+    function attachSliders() {
+      weapons.forEach((w, idx) => {
+        const slider  = document.getElementById(`slider-${idx}`);
+        const badge   = document.getElementById(`badge-${idx}`);
+        const statsEl = document.getElementById(`stats-${idx}`);
+        if (!slider) return;
+        slider.addEventListener('input', () => {
+          const lvl = parseInt(slider.value, 10);
+          badge.textContent = lvl;
+          statsEl.innerHTML = statsHtml(w, lvl);
+        });
+      });
+    }
+
+    function render() {
+      const q = search.value.trim().toLowerCase();
+      const t = typeFilter.value;
+      const filtered = weapons.filter(w =>
+        (t === 'all' || w.type === t) &&
+        (!q || w.name.toLowerCase().includes(q))
+      );
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty">No weapons match your search.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered
+        .map(w => cardHtml(w, weapons.indexOf(w)))
+        .join('');
+
+      attachSliders();
+    }
+
+    function loadTypeFilter() {
+      const types = [...new Set(weapons.map(w => w.type))].sort((a, b) => a.localeCompare(b));
+      typeFilter.innerHTML =
+        `<option value="all">All Types</option>` +
+        types.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    search.addEventListener('input', render);
+    typeFilter.addEventListener('change', render);
+
+    (async () => {
+      try {
+        weapons = await loadWeaponShowcase();
+        loadTypeFilter();
+        render();
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="error-state">
+          ⚠️ Could not load weapon data.<br/>
+          <small>Make sure SHEET_ID is set in items.js and the sheet is published publicly.</small><br/><br/>
+          <small style="opacity:.5">${err.message}</small>
+        </div>`;
       }
     })();
   </script>
