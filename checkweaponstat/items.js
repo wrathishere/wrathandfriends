@@ -108,11 +108,6 @@ function normalizeWeapon(row) {
   .split(/[,;]+/)
   .map(lvl => lvl.replace(/^"|"$/g, "").trim())
   .filter(Boolean);
-
-  if (parsedLevels.length === 0) {
-    parsedLevels = ["1", "2", "3", "4"];
-  }
-
   // Parse quantity_available as a clean number
   const qtyRaw = cleanVal(getRowVal(["quantity_available", "quantity available", "quantity"]));
   const qtyVal = parseInt(qtyRaw, 10);
