@@ -41,13 +41,39 @@
     function statsHtml(w, level) {
       let html = '';
 
-      // Helper function to safely fetch stats from either your old or new items.js structure
+      // Safe lookup utility that handles spacing, casing, underscores,
+      // and common Google Sheet column truncations (like "increa" instead of "increase")
       const getStat = (key) => {
-        if (w.stats && w.stats[key] !== undefined) return w.stats[key];
-        return w[key];
+        const normTarget = key.toLowerCase().replace(/[\s_-]+/g, '');
+        
+        const searchIn = (obj) => {
+          if (!obj) return undefined;
+          
+          // 1. Exact normalized match
+          for (const [k, val] of Object.entries(obj)) {
+            const normK = k.toLowerCase().replace(/[\s_-]+/g, '');
+            if (normK === normTarget) return val;
+          }
+
+          // 2. Fuzzy match to resolve column truncation (e.g. "durability_increa" matching "durability_increase")
+          if (normTarget.endsWith('increase')) {
+            const baseStat = normTarget.replace('increase', ''); // e.g., "durability"
+            for (const [k, val] of Object.entries(obj)) {
+              const normK = k.toLowerCase().replace(/[\s_-]+/g, '');
+              if (normK.startsWith(baseStat) && (normK.endsWith('increa') || normK.endsWith('incre') || normK.endsWith('inc'))) {
+                return val;
+              }
+            }
+          }
+          return undefined;
+        };
+
+        const res = searchIn(w.stats);
+        if (res !== undefined) return res;
+        return searchIn(w);
       };
 
-      // Configuration of possible stats to look for (lowercased lookup keys)
+      // Configuration of possible stats to look for
       const STATS_TO_RENDER = [
         { label: 'Slash',            base: 'slash_base',            inc: 'slash_increase' },
         { label: 'Blunt',            base: 'blunt_base',            inc: 'blunt_increase' },
@@ -67,13 +93,13 @@
         { label: 'Summons',          base: 'summons_base',          inc: 'summons_increase' },
         { label: 'Durability',       base: 'durability_base',       inc: 'durability_increase' },
         
-        // Single values (non-scaling, lowercased keys)
+        // Single values (non-scaling)
         { label: 'Stamina Use',      base: 'use_stamina' },
         { label: 'Stamina Use',      base: 'stamina' },
         { label: 'Eitr Use',         base: 'use_eitr' },
         { label: 'Eitr Use',         base: 'eitr' },
         { label: 'Parry Bonus',      base: 'parry_bonus' },
-        { label: 'Quantity',         base: 'quantity availble' }, // Safe typo fallback
+        { label: 'Quantity',         base: 'quantity availble' }, // Handles custom sheet typos
         { label: 'Quantity',         base: 'quantity available' },
         { label: 'Quantity',         base: 'quantity' }
       ];
@@ -81,28 +107,39 @@
       const renderedLabels = new Set();
 
       STATS_TO_RENDER.forEach(cfg => {
-        // Prevent duplicate rows for the same label
         if (renderedLabels.has(cfg.label)) return;
 
-        const base = parseFloat(getStat(cfg.base)) || 0;
-        const inc  = cfg.inc ? (parseFloat(getStat(cfg.inc)) || 0) : 0;
+        const rawBase = getStat(cfg.base);
+        if (rawBase === undefined || rawBase === null || rawBase === '') return;
 
-        // Skip if stat doesn't exist on this card
-        if (base <= 0 && inc <= 0) return;
+        const baseNum = parseFloat(rawBase);
+        const incNum  = cfg.inc ? (parseFloat(getStat(cfg.inc)) || 0) : 0;
+
+        // Skip stat output if numeric base is 0 or less, and no upgrade scaling exists
+        if (!isNaN(baseNum) && baseNum <= 0 && incNum <= 0) return;
 
         renderedLabels.add(cfg.label);
-        const val = atLevel(base, inc, level);
+
+        let displayVal;
+        if (isNaN(baseNum)) {
+          displayVal = rawBase; // Output text directly
+        } else {
+          displayVal = atLevel(baseNum, incNum, level);
+          if (typeof rawBase === 'string' && rawBase.endsWith('x')) {
+            displayVal += 'x';
+          }
+        }
         
         html += `<div class="stat-row">
           <span class="stat-label-text">${cfg.label}</span>
-          <span class="stat-value">${val}</span>
+          <span class="stat-value">${displayVal}</span>
         </div>`;
       });
 
       return html;
     }
 
-    // Global function to programmatically update weapon level via buttons
+    // Programmatically update weapon level via buttons
     window.setWeaponLevel = function(idx, lvl) {
       const slider = document.getElementById(`slider-${idx}`);
       const badge  = document.getElementById(`badge-${idx}`);
@@ -116,13 +153,31 @@
       if (w) {
         statsEl.innerHTML = statsHtml(w, lvl);
       }
+
+      // Keep button selected layout highlights matched
+      const cardEl = slider.closest('.card');
+      if (cardEl) {
+        cardEl.querySelectorAll('.level-btn').forEach(btn => {
+          if (parseInt(btn.textContent.trim(), 10) === lvl) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
     };
 
     // Build a full card HTML string
     function cardHtml(w, idx) {
-      const maxLevel = 200;
+      // Find max level dynamically, or fall back to standard Cap (Level 4)
+      let maxLevel = 4;
+      if (w.levels_available && w.levels_available.length > 0) {
+        const numericLevels = w.levels_available.map(lvl => parseInt(lvl, 10)).filter(lvl => !isNaN(lvl));
+        if (numericLevels.length > 0) {
+          maxLevel = Math.max(...numericLevels);
+        }
+      }
       
-      // Build button elements for each available level
       const hasLevels = w.levels_available && w.levels_available.length > 0;
       const levelsHtml = hasLevels ? `
         <div class="level-buttons-container">
@@ -137,23 +192,30 @@
         </div>
       ` : '';
 
+      // Check if image exists; display placeholder shield icon if empty
+      const hasImage = !!w.image;
+      const imgHtml = hasImage ? `
+        <img
+          src="${w.image}"
+          alt="${w.name}"
+          loading="lazy"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+        />
+        <span class="no-img" style="display:none">⚔️</span>
+      ` : `
+        <span class="no-img">⚔️</span>
+      `;
+
       return `<article class="card">
         <div class="card-top">
           <div class="card-name-block">
             <h2 class="name">${w.name}</h2>
             <p class="type">${w.type}</p>
-            <!-- Relocated Level buttons -->
             ${levelsHtml}
           </div>
           <div class="thumb">
             <span class="level-badge-overlay" id="badge-${idx}">1</span>
-            <img
-              src="${w.image}"
-              alt="${w.name}"
-              loading="lazy"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-            />
-            <span class="no-img" style="display:none">⚔️</span>
+            ${imgHtml}
           </div>
         </div>
 
@@ -182,11 +244,28 @@
         const badge   = document.getElementById(`badge-${idx}`);
         const statsEl = document.getElementById(`stats-${idx}`);
         if (!slider) return;
+
+        const updateActiveButton = (lvl) => {
+          const cardEl = slider.closest('.card');
+          if (cardEl) {
+            cardEl.querySelectorAll('.level-btn').forEach(btn => {
+              if (parseInt(btn.textContent.trim(), 10) === lvl) {
+                btn.classList.add('active');
+              } else {
+                btn.classList.remove('active');
+              }
+            });
+          }
+        };
+
         slider.addEventListener('input', () => {
           const lvl = parseInt(slider.value, 10);
           badge.textContent = lvl;
           statsEl.innerHTML = statsHtml(w, lvl);
+          updateActiveButton(lvl);
         });
+
+        updateActiveButton(1);
       });
     }
 
