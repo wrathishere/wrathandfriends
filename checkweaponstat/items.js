@@ -105,8 +105,8 @@ function normalizeWeapon(row) {
 
   // Parse custom levels, splitting on commas, semicolons, spaces, and decimal dots (resolves locale issues)
   let parsedLevels = levelsRaw
-  .split(/[,;]+/)
-  .map(lvl => lvl.replace(/^"|"$/g, "").trim())
+  .split(/[|,;]+/)
+  .map(lvl => lvl.trim())
   .filter(Boolean);
   // Parse quantity_available as a clean number
   const qtyRaw = cleanVal(getRowVal(["quantity_available", "quantity available", "quantity"]));
