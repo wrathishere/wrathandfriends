@@ -103,7 +103,7 @@ function normalizeWeapon(row) {
   const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
   const weaponType = rawType ? (rawType.charAt(0).toUpperCase() + rawType.slice(1)) : "Swords";
 
-  // Parse comma-separated custom levels, or default to standard levels [1, 2, 3, 4] for Valheim preview scaling
+  // Parse comma-separated custom levels, or default to standard levels [1, 2, 3, 4]
   let parsedLevels = levelsRaw
     .split(",")
     .map(lvl => lvl.replace(/^"|"$/g, "").trim())
@@ -113,19 +113,25 @@ function normalizeWeapon(row) {
     parsedLevels = ["1", "2", "3", "4"];
   }
 
+  // Parse quantity_available as a clean number
+  const qtyRaw = cleanVal(getRowVal(["quantity_available", "quantity available", "quantity"]));
+  const qtyVal = parseInt(qtyRaw, 10);
+
   const weapon = {
     name:                nameVal,
     type:                weaponType,
     levels_available:    parsedLevels,
     image:               thumbFilename ? `images/${thumbFilename}` : "",
+    quantity_available:  isNaN(qtyVal) ? 0 : qtyVal,
     stats:               {} 
   };
 
-  // Excluded columns to prevent duplicating them inside the raw stats display panel
+  // Excluded columns to prevent duplicating or showing structural stats in the details block
   const excludedKeysNormalized = [
     "name", "thumbnail", "image", "thumb", 
     "levels available", "levels", "levelsavailable", 
-    "type", "category", "weapontype", "weapon type"
+    "type", "category", "weapontype", "weapon type",
+    "quantityavailable", "quantity", "quantity_available"
   ].map(k => k.toLowerCase().replace(/[\s_-]+/g, ''));
 
   // Automatically save all other spreadsheet columns as stats
@@ -134,8 +140,11 @@ function normalizeWeapon(row) {
     if (excludedKeysNormalized.includes(normKey)) return;
 
     const rawValue = cleanVal(row[key]);
+    
+    // Check if the value is a pure number to prevent stripping multiplier extensions (like "2x")
+    const isPureNumber = /^-?\d+(\.\d+)?$/.test(rawValue);
     const numVal = parseFloat(rawValue);
-    weapon.stats[key] = !isNaN(numVal) ? numVal : rawValue;
+    weapon.stats[key] = isPureNumber && !isNaN(numVal) ? numVal : rawValue;
   });
 
   return weapon;
