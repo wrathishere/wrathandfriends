@@ -8,6 +8,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Compatibility Layer for the Glowing Availability Indicators */
+    .thumb-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      flex-shrink: 0;
+    }
+    .availability-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      text-align: center;
+      display: inline-block;
+    }
+    .availability-badge.available {
+      color: #2ecc71;
+      text-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
+    }
+    .availability-badge.unavailable {
+      color: #e74c3c;
+      text-shadow: 0 0 6px rgba(231, 76, 60, 0.8);
+    }
+  </style>
 </head>
 <body>
   <main class="wrap">
@@ -73,7 +101,7 @@
         return searchIn(w);
       };
 
-      // Configuration of possible stats to look for
+      // Configuration of possible stats to look for (Quantity stats have been removed completely)
       const STATS_TO_RENDER = [
         { label: 'Slash',            base: 'slash_base',            inc: 'slash_increase' },
         { label: 'Blunt',            base: 'blunt_base',            inc: 'blunt_increase' },
@@ -98,10 +126,7 @@
         { label: 'Stamina Use',      base: 'stamina' },
         { label: 'Eitr Use',         base: 'use_eitr' },
         { label: 'Eitr Use',         base: 'eitr' },
-        { label: 'Parry Bonus',      base: 'parry_bonus' },
-        { label: 'Quantity',         base: 'quantity availble' }, // Handles custom sheet typos
-        { label: 'Quantity',         base: 'quantity available' },
-        { label: 'Quantity',         base: 'quantity' }
+        { label: 'Parry Bonus',      base: 'parry_bonus' }
       ];
 
       const renderedLabels = new Set();
@@ -123,6 +148,8 @@
         let displayVal;
         if (isNaN(baseNum)) {
           displayVal = rawBase; // Output text directly
+        } else if (incNum === 0) {
+          displayVal = rawBase; // Prevent stripping non-numeric indicators (like "2x") on static entries
         } else {
           displayVal = atLevel(baseNum, incNum, level);
           if (typeof rawBase === 'string' && rawBase.endsWith('x')) {
@@ -206,6 +233,12 @@
         <span class="no-img">⚔️</span>
       `;
 
+      // Determine glowing availability badges
+      const isAvailable = w.quantity_available > 0;
+      const availabilityHtml = isAvailable 
+        ? `<span class="availability-badge available">Available</span>`
+        : `<span class="availability-badge unavailable">Unavailable</span>`;
+
       return `<article class="card">
         <div class="card-top">
           <div class="card-name-block">
@@ -213,9 +246,12 @@
             <p class="type">${w.type}</p>
             ${levelsHtml}
           </div>
-          <div class="thumb">
-            <span class="level-badge-overlay" id="badge-${idx}">1</span>
-            ${imgHtml}
+          <div class="thumb-wrapper">
+            <div class="thumb">
+              <span class="level-badge-overlay" id="badge-${idx}">1</span>
+              ${imgHtml}
+            </div>
+            ${availabilityHtml}
           </div>
         </div>
 
