@@ -10,7 +10,7 @@ const SHEET_TABS = {
   // "Bows": "Bows",
 };
 
-// GitHub base path for weapon images (transparent PNGs)
+// GitHub base path for weapon images (fallback only)
 const IMG_BASE = "https://raw.githubusercontent.com/wrathishere/wrathandfriends/main/checkweaponstat/images";
 
 // ── FETCH SHEET AS CSV ────────────────────────────────────────────────────────
@@ -81,16 +81,27 @@ function parseCSV(text) {
 function normalizeWeapon(row, weaponType) {
   const n = v => parseFloat(v) || 0;
   
-  // Clean values from lowercase keys
-  const nameVal = row["name"] ? row["name"].trim() : "Unknown Item";
-  const thumbFilename = row["thumbnail"] ? row["thumbnail"].trim() : "";
-  const levelsRaw = row["levels available"] || "";
+  // Clean surrounding quotes and whitespaces helper
+  const cleanVal = (val) => {
+    if (!val) return "";
+    return val.replace(/^"|"$/g, "").trim(); // Strips double quotes from start/end
+  };
+
+  const nameVal = cleanVal(row["name"]) || "Unknown Item";
+  const thumbFilename = cleanVal(row["thumbnail"]);
+  const levelsRaw = cleanVal(row["levels available"]);
+
+  // Split comma-separated levels safely, stripping any trailing/nested double-quotes
+  const parsedLevels = levelsRaw
+    .split(",")
+    .map(lvl => lvl.replace(/^"|"$/g, "").trim())
+    .filter(Boolean);
 
   const weapon = {
     name:                nameVal,
     type:                weaponType,
-    levels_available:    levelsRaw.split(",").map(s => s.trim()).filter(Boolean),
-    // Fallback to local images folder or use remote GitHub folder
+    levels_available:    parsedLevels,
+    // Correctly point back to your local images folder
     image:               thumbFilename ? `images/${thumbFilename}` : "",
     stats:               {} 
   };
