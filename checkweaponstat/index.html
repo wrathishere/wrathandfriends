@@ -196,14 +196,8 @@
 
     // Build a full card HTML string
     function cardHtml(w, idx) {
-      // Find max level dynamically, or fall back to standard Cap (Level 4)
-      let maxLevel = 4;
-      if (w.levels_available && w.levels_available.length > 0) {
-        const numericLevels = w.levels_available.map(lvl => parseInt(lvl, 10)).filter(lvl => !isNaN(lvl));
-        if (numericLevels.length > 0) {
-          maxLevel = Math.max(...numericLevels);
-        }
-      }
+      // Level Slider is always set to 200
+      const maxLevel = 200;
       
       const hasLevels = w.levels_available && w.levels_available.length > 0;
       const levelsHtml = hasLevels ? `
