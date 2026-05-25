@@ -1,6 +1,6 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 // Paste your Google Sheets ID here (the long string in the sheet URL)
-const SHEET_ID = "1hQNwJ-UDoQxhamy4IiLcb4ClHxIaquDGu6_LSM1ehZ0";
+const SHEET_ID = "1KZriY6MFzCVBtXZkcVRi36VW6nhtNb0uKmZGXJN8XIM";
 
 // Map: display label → exact tab name in your spreadsheet
 // Add more weapon categories by adding entries here
