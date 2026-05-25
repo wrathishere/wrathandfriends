@@ -478,21 +478,25 @@ function attachCardListeners() {}
           <span class="report-missing-value">${escHtml(row["Missing Wholesale"] || "0")}</span>
         </div>
       </div>
-      <div class="report-columns">
-        <div class="report-col">
-          <h3>Manufacturing</h3>
-          ${listHTML(manufacturing)}
-        </div>
-        <div class="report-col">
-          <h3>Retail</h3>
-          ${listHTML(retail)}
-        </div>
-        <div class="report-col">
-          <h3>Wholesale</h3>
-          ${listHTML(wholesale)}
+     <div class="report-scrollable">
+        <div class="report-columns">
+          <div class="report-col">
+            <h3>Manufacturing</h3>
+            ${listHTML(manufacturing)}
+          </div>
+          <div class="report-col">
+            <h3>Retail</h3>
+            ${listHTML(retail)}
+          </div>
+          <div class="report-col">
+            <h3>Wholesale</h3>
+            ${listHTML(wholesale)}
+          </div>
         </div>
       </div>
-      <button id="sort-shop-btn" class="sort-shop-btn" type="button">Sort Shop For Me</button>`;
+      <div class="report-footer">
+        <button id="sort-shop-btn" class="sort-shop-btn" type="button">Sort Shop For Me</button>
+      </div>`;
 
     reportBackdrop.removeAttribute("hidden");
 
