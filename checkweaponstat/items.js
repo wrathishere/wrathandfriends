@@ -105,9 +105,9 @@ function normalizeWeapon(row) {
 
   // Parse custom levels, splitting on commas, semicolons, spaces, and decimal dots (resolves locale issues)
   let parsedLevels = levelsRaw
-    .split(/[,;\s.]+/)
-    .map(lvl => lvl.replace(/^"|"$/g, "").trim())
-    .filter(Boolean);
+  .split(/[,;]+/)
+  .map(lvl => lvl.replace(/^"|"$/g, "").trim())
+  .filter(Boolean);
 
   if (parsedLevels.length === 0) {
     parsedLevels = ["1", "2", "3", "4"];
