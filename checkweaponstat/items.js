@@ -103,9 +103,9 @@ function normalizeWeapon(row) {
   const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
   const weaponType = rawType ? (rawType.charAt(0).toUpperCase() + rawType.slice(1)) : "Swords";
 
-  // Parse comma-separated custom levels, or default to standard levels [1, 2, 3, 4]
+  // Parse comma/semicolon/space separated custom levels, or default to [1, 2, 3, 4]
   let parsedLevels = levelsRaw
-    .split(",")
+    .split(/[,;\s]+/)
     .map(lvl => lvl.replace(/^"|"$/g, "").trim())
     .filter(Boolean);
 
