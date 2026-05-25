@@ -97,7 +97,7 @@ function normalizeWeapon(row) {
 
   const nameVal = cleanVal(getRowVal(["name"])) || "Unknown Item";
   const thumbFilename = cleanVal(getRowVal(["thumbnail", "image", "thumb"]));
-  const levelsRaw = cleanVal(getRowVal(["levels available", "levels", "levelsavailable"]));
+  const levelsRaw = cleanVal(getRowVal(["levels available", "levels", "levelsavailable"])).replace(/"/g, "");
   
   // Fetch category info directly from the spreadsheet (handles "Category", "Type", "Weapon Type", etc.)
   const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
