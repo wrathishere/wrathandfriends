@@ -763,3 +763,21 @@ body {
 .report-columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1rem}
 .report-col ul{padding-left:1rem;margin:0}
 .report-col li{font-size:0.82rem;padding:0.12rem 0;color:var(--text-main)}
+.report-modal {
+  display: flex;
+  flex-direction: column;
+}
+.report-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.report-footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+.report-footer .sort-shop-btn {
+  width: 100%;
+}
