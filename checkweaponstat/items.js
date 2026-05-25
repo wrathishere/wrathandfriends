@@ -45,7 +45,7 @@ function parseCSVLine(line) {
   return vals;
 }
 
-// ── TRANSPOSE PARSER (Converts Weapon Columns to Rows) ────────────────────────
+// ── TRANSPOSE PARSER (Converts Weapon Columns to Rows with Lowercase Keys) ────
 function parseCSV(text) {
   const lines = text.trim().split("\n");
   if (lines.length < 1) return [];
@@ -65,11 +65,12 @@ function parseCSV(text) {
       const key = grid[rowIdx][0];
       const val = grid[rowIdx][colIdx];
       if (key !== undefined && key !== "") {
-        obj[key.trim()] = val !== undefined ? val.trim() : "";
+        // Enforce lowercase keys to prevent matching casing bugs
+        obj[key.trim().toLowerCase()] = val !== undefined ? val.trim() : "";
       }
     }
-    // Only parse if column has a name
-    if (obj["Name"] && obj["Name"].trim() !== "") {
+    // Check lowercase key
+    if (obj["name"] && obj["name"].trim() !== "") {
       rows.push(obj);
     }
   }
@@ -79,12 +80,16 @@ function parseCSV(text) {
 // ── NORMALIZE ROW → WEAPON OBJECT ─────────────────────────────────────────────
 function normalizeWeapon(row, weaponType) {
   const n = v => parseFloat(v) || 0;
+  
+  // Clean values from lowercase keys
+  const nameVal = row["name"] ? row["name"].trim() : "Unknown Item";
   const thumbFilename = row["thumbnail"] ? row["thumbnail"].trim() : "";
+  const levelsRaw = row["levels available"] || "";
 
   const weapon = {
-    name:                row["Name"] ? row["Name"].trim() : "Unknown Item",
+    name:                nameVal,
     type:                weaponType,
-    levels_available:    (row["levels available"] || "").split(",").map(s => s.trim()).filter(Boolean),
+    levels_available:    levelsRaw.split(",").map(s => s.trim()).filter(Boolean),
     // Fallback to local images folder or use remote GitHub folder
     image:               thumbFilename ? `images/${thumbFilename}` : "",
     stats:               {} 
@@ -92,7 +97,7 @@ function normalizeWeapon(row, weaponType) {
 
   // Automatically save all other spreadsheet rows as dynamic stats
   Object.keys(row).forEach(key => {
-    if (["Name", "thumbnail", "levels available"].includes(key)) return;
+    if (["name", "thumbnail", "levels available"].includes(key)) return;
     const numVal = parseFloat(row[key]);
     weapon.stats[key] = !isNaN(numVal) ? numVal : row[key].trim();
   });
