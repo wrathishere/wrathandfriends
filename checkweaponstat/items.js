@@ -1,14 +1,6 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-// Paste your Google Sheets ID here (the long string in the sheet URL)
+// Paste your Google Sheets ID here
 const SHEET_ID = "1KZriY6MFzCVBtXZkcVRi36VW6nhtNb0uKmZGXJN8XIM";
-
-// Map: display label → exact tab name in your spreadsheet
-// Add more weapon categories by adding entries here
-const SHEET_TABS = {
-  "Swords": "Swords",
-  // "Axes": "Axes",
-  // "Bows": "Bows",
-};
 
 // GitHub base path for weapon images (fallback only)
 const IMG_BASE = "https://raw.githubusercontent.com/wrathishere/wrathandfriends/main/checkweaponstat/images";
@@ -45,31 +37,35 @@ function parseCSVLine(line) {
   return vals;
 }
 
-// ── TRANSPOSE PARSER (Converts Weapon Columns to Rows with Lowercase Keys) ────
+// ── STANDARD DATABASE PARSER (1 Row = 1 Weapon, Columns = Stats) ─────────────
 function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  if (lines.length < 1) return [];
+  const lines = text.trim().split(/\r?\n/); // Safely handle Windows line endings
+  if (lines.length < 2) return [];
 
   // Parse lines into a 2D grid
   const grid = lines.map(line => parseCSVLine(line));
-  if (grid.length === 0 || grid[0].length < 2) return [];
+  if (grid.length === 0 || grid[0].length === 0) return [];
 
-  const weaponsCount = grid[0].length;
+  // The first row represents the column headers
+  const headers = grid[0].map(header => header.trim().toLowerCase());
   const rows = [];
 
-  // Column index 0 has key labels (e.g. "Name", "durability_base").
-  // Columns 1 to N represent individual weapon columns.
-  for (let colIdx = 1; colIdx < weaponsCount; colIdx++) {
+  // Rows 1 to N represent individual weapon records
+  for (let rowIdx = 1; rowIdx < grid.length; rowIdx++) {
+    const vals = grid[rowIdx];
+    // Skip empty lines
+    if (vals.length === 0 || (vals.length === 1 && vals[0] === "")) continue;
+
     const obj = {};
-    for (let rowIdx = 0; rowIdx < grid.length; rowIdx++) {
-      const key = grid[rowIdx][0];
-      const val = grid[rowIdx][colIdx];
+    for (let colIdx = 0; colIdx < headers.length; colIdx++) {
+      const key = headers[colIdx];
+      const val = vals[colIdx];
       if (key !== undefined && key !== "") {
-        // Enforce lowercase keys to prevent matching casing bugs
-        obj[key.trim().toLowerCase()] = val !== undefined ? val.trim() : "";
+        obj[key] = val !== undefined ? val.trim() : "";
       }
     }
-    // Check lowercase key
+
+    // Only process rows that have a valid name
     if (obj["name"] && obj["name"].trim() !== "") {
       rows.push(obj);
     }
@@ -78,52 +74,81 @@ function parseCSV(text) {
 }
 
 // ── NORMALIZE ROW → WEAPON OBJECT ─────────────────────────────────────────────
-function normalizeWeapon(row, weaponType) {
-  const n = v => parseFloat(v) || 0;
-  
+function normalizeWeapon(row) {
   // Clean surrounding quotes and whitespaces helper
   const cleanVal = (val) => {
-    if (!val) return "";
-    return val.replace(/^"|"$/g, "").trim(); // Strips double quotes from start/end
+    if (val === undefined || val === null) return "";
+    return val.toString().replace(/^"|"$/g, "").trim(); // Strips double quotes from start/end
   };
 
-  const nameVal = cleanVal(row["name"]) || "Unknown Item";
-  const thumbFilename = cleanVal(row["thumbnail"]);
-  const levelsRaw = cleanVal(row["levels available"]);
+  // Find keys in a highly robust, space/underscore/case-insensitive manner
+  const getRowVal = (keysToTry) => {
+    for (const key of keysToTry) {
+      const normalizedTarget = key.toLowerCase().replace(/[\s_-]+/g, '');
+      for (const rowKey of Object.keys(row)) {
+        const normalizedRowKey = rowKey.toLowerCase().replace(/[\s_-]+/g, '');
+        if (normalizedRowKey === normalizedTarget) {
+          return row[rowKey];
+        }
+      }
+    }
+    return "";
+  };
 
-  // Split comma-separated levels safely, stripping any trailing/nested double-quotes
-  const parsedLevels = levelsRaw
+  const nameVal = cleanVal(getRowVal(["name"])) || "Unknown Item";
+  const thumbFilename = cleanVal(getRowVal(["thumbnail", "image", "thumb"]));
+  const levelsRaw = cleanVal(getRowVal(["levels available", "levels", "levelsavailable"]));
+  
+  // Fetch category info directly from the spreadsheet (handles "Category", "Type", "Weapon Type", etc.)
+  const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
+  const weaponType = rawType ? (rawType.charAt(0).toUpperCase() + rawType.slice(1)) : "Swords";
+
+  // Parse comma-separated custom levels, or default to standard levels [1, 2, 3, 4] for Valheim preview scaling
+  let parsedLevels = levelsRaw
     .split(",")
     .map(lvl => lvl.replace(/^"|"$/g, "").trim())
     .filter(Boolean);
+
+  if (parsedLevels.length === 0) {
+    parsedLevels = ["1", "2", "3", "4"];
+  }
 
   const weapon = {
     name:                nameVal,
     type:                weaponType,
     levels_available:    parsedLevels,
-    // Correctly point back to your local images folder
-    image: thumbFilename ? `./images/${thumbFilename}` : "",
+    image:               thumbFilename ? `images/${thumbFilename}` : "",
     stats:               {} 
   };
 
-  // Automatically save all other spreadsheet rows as dynamic stats
+  // Excluded columns to prevent duplicating them inside the raw stats display panel
+  const excludedKeysNormalized = [
+    "name", "thumbnail", "image", "thumb", 
+    "levels available", "levels", "levelsavailable", 
+    "type", "category", "weapontype", "weapon type"
+  ].map(k => k.toLowerCase().replace(/[\s_-]+/g, ''));
+
+  // Automatically save all other spreadsheet columns as stats
   Object.keys(row).forEach(key => {
-    if (["name", "thumbnail", "levels available"].includes(key)) return;
-    const numVal = parseFloat(row[key]);
-    weapon.stats[key] = !isNaN(numVal) ? numVal : row[key].trim();
+    const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
+    if (excludedKeysNormalized.includes(normKey)) return;
+
+    const rawValue = cleanVal(row[key]);
+    const numVal = parseFloat(rawValue);
+    weapon.stats[key] = !isNaN(numVal) ? numVal : rawValue;
   });
 
   return weapon;
 }
 
-// ── LOAD ALL WEAPONS FROM ALL TABS ────────────────────────────────────────────
+// ── LOAD WEAPONS FROM THE UNIFIED "final" TAB ──────────────────────────────────
 async function loadWeaponShowcase() {
-  const results = await Promise.all(
-    Object.entries(SHEET_TABS).map(async ([displayType, tabName]) => {
-      const csv  = await fetchSheetCSV(tabName);
-      const rows = parseCSV(csv);
-      return rows.map(r => normalizeWeapon(r, displayType));
-    })
-  );
-  return results.flat();
+  try {
+    const csv = await fetchSheetCSV("final");
+    const rows = parseCSV(csv);
+    return rows.map(r => normalizeWeapon(r));
+  } catch (err) {
+    console.error("Error loading weapon database:", err);
+    throw err;
+  }
 }
