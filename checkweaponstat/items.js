@@ -102,7 +102,7 @@ function normalizeWeapon(row, weaponType) {
     type:                weaponType,
     levels_available:    parsedLevels,
     // Correctly point back to your local images folder
-    image:               thumbFilename ? `images/${thumbFilename}` : "",
+    image: thumbFilename ? `./images/${thumbFilename}` : "",
     stats:               {} 
   };
 
