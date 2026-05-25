@@ -1,163 +1,136 @@
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-// Paste your Google Sheets ID here
-const SHEET_ID = "1KZriY6MFzCVBtXZkcVRi36VW6nhtNb0uKmZGXJN8XIM";
+// ============================================================
+//  items.js — Dynamic data loader
+//  Fetches item JSON from GitHub RAW with cache busting
+//  Auto-refreshes every 60 seconds to catch new commits fast
+// ============================================================
 
-// GitHub base path for weapon images (fallback only)
-const IMG_BASE = "https://raw.githubusercontent.com/wrathishere/wrathandfriends/main/checkweaponstat/images";
+const REPO_RAW   = "https://raw.githubusercontent.com/wrathishere/rpg-shop/main";
+const CACHE_TIME = 60000; // auto-refresh interval in ms (60s)
 
-// ── FETCH SHEET AS CSV ────────────────────────────────────────────────────────
-async function fetchSheetCSV(tabName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&t=${Date.now()}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Could not fetch sheet "${tabName}" (HTTP ${res.status})`);
-  return res.text();
-}
+let ITEMS        = [];
+let _lastFetched = 0;
 
-// ── CSV LINE PARSER (Handles quotes and commas) ───────────────────────────────
-function parseCSVLine(line) {
-  const vals = [];
-  let cur = "", inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') {
-        cur += '"';
-        i++; // skip next quote
-      } else {
-        inQ = !inQ;
-      }
-    } else if (ch === ',' && !inQ) {
-      vals.push(cur.trim());
-      cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  vals.push(cur.trim());
-  return vals;
-}
+// ── Main loader ───────────────────────────────────────────
+// Called by shop.js on init and on auto-refresh
+async function loadItemsFromSheet(force = false) {
+  const now = Date.now();
 
-// ── STANDARD DATABASE PARSER (1 Row = 1 Weapon, Columns = Stats) ─────────────
-function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/); // Safely handle Windows line endings
-  if (lines.length < 2) return [];
+  // Skip if fetched recently and not forced
+  if (!force && ITEMS.length > 0 && (now - _lastFetched) < CACHE_TIME) return;
 
-  // Parse lines into a 2D grid
-  const grid = lines.map(line => parseCSVLine(line));
-  if (grid.length === 0 || grid[0].length === 0) return [];
-
-  // The first row represents the column headers
-  const headers = grid[0].map(header => header.trim().toLowerCase());
-  const rows = [];
-
-  // Rows 1 to N represent individual weapon records
-  for (let rowIdx = 1; rowIdx < grid.length; rowIdx++) {
-    const vals = grid[rowIdx];
-    // Skip empty lines
-    if (vals.length === 0 || (vals.length === 1 && vals[0] === "")) continue;
-
-    const obj = {};
-    for (let colIdx = 0; colIdx < headers.length; colIdx++) {
-      const key = headers[colIdx];
-      const val = vals[colIdx];
-      if (key !== undefined && key !== "") {
-        obj[key] = val !== undefined ? val.trim() : "";
-      }
-    }
-
-    // Only process rows that have a valid name
-    if (obj["name"] && obj["name"].trim() !== "") {
-      rows.push(obj);
-    }
-  }
-  return rows;
-}
-
-// ── NORMALIZE ROW → WEAPON OBJECT ─────────────────────────────────────────────
-function normalizeWeapon(row) {
-  // Clean surrounding quotes and whitespaces helper
-  const cleanVal = (val) => {
-    if (val === undefined || val === null) return "";
-    return val.toString().replace(/^"|"$/g, "").trim(); // Strips double quotes from start/end
-  };
-
-  // Find keys in a highly robust, space/underscore/case-insensitive manner
-  const getRowVal = (keysToTry) => {
-    for (const key of keysToTry) {
-      const normalizedTarget = key.toLowerCase().replace(/[\s_-]+/g, '');
-      for (const rowKey of Object.keys(row)) {
-        const normalizedRowKey = rowKey.toLowerCase().replace(/[\s_-]+/g, '');
-        if (normalizedRowKey === normalizedTarget) {
-          return row[rowKey];
-        }
-      }
-    }
-    return "";
-  };
-
-  const nameVal = cleanVal(getRowVal(["name"])) || "Unknown Item";
-  const thumbFilename = cleanVal(getRowVal(["thumbnail", "image", "thumb"]));
-  const levelsRaw = cleanVal(getRowVal(["levels available", "levels", "levelsavailable"]));
-  
-  // Fetch category info directly from the spreadsheet (handles "Category", "Type", "Weapon Type", etc.)
-  const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
-  const weaponType = rawType ? (rawType.charAt(0).toUpperCase() + rawType.slice(1)) : "Swords";
-
-  // Parse comma/semicolon/space separated custom levels, or default to [1, 2, 3, 4]
-  let parsedLevels = levelsRaw
-    .split(/[,;\s]+/)
-    .map(lvl => lvl.replace(/^"|"$/g, "").trim())
-    .filter(Boolean);
-
-  if (parsedLevels.length === 0) {
-    parsedLevels = ["1", "2", "3", "4"];
-  }
-
-  // Parse quantity_available as a clean number
-  const qtyRaw = cleanVal(getRowVal(["quantity_available", "quantity available", "quantity"]));
-  const qtyVal = parseInt(qtyRaw, 10);
-
-  const weapon = {
-    name:                nameVal,
-    type:                weaponType,
-    levels_available:    parsedLevels,
-    image:               thumbFilename ? `images/${thumbFilename}` : "",
-    quantity_available:  isNaN(qtyVal) ? 0 : qtyVal,
-    stats:               {} 
-  };
-
-  // Excluded columns to prevent duplicating or showing structural stats in the details block
-  const excludedKeysNormalized = [
-    "name", "thumbnail", "image", "thumb", 
-    "levels available", "levels", "levelsavailable", 
-    "type", "category", "weapontype", "weapon type",
-    "quantityavailable", "quantity", "quantity_available"
-  ].map(k => k.toLowerCase().replace(/[\s_-]+/g, ''));
-
-  // Automatically save all other spreadsheet columns as stats
-  Object.keys(row).forEach(key => {
-    const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
-    if (excludedKeysNormalized.includes(normKey)) return;
-
-    const rawValue = cleanVal(row[key]);
-    
-    // Check if the value is a pure number to prevent stripping multiplier extensions (like "2x")
-    const isPureNumber = /^-?\d+(\.\d+)?$/.test(rawValue);
-    const numVal = parseFloat(rawValue);
-    weapon.stats[key] = isPureNumber && !isNaN(numVal) ? numVal : rawValue;
-  });
-
-  return weapon;
-}
-
-// ── LOAD WEAPONS FROM THE UNIFIED "final" TAB ──────────────────────────────────
-async function loadWeaponShowcase() {
   try {
-    const csv = await fetchSheetCSV("final");
-    const rows = parseCSV(csv);
-    return rows.map(r => normalizeWeapon(r));
+    // Cache-bust with timestamp so GitHub CDN doesn't serve stale content
+    const bust     = `?t=${now}`;
+    const manifest = await fetchJSON(`${REPO_RAW}/_data/items/manifest.json${bust}`);
+
+    const validFiles = manifest.filter(f =>
+      f && f.endsWith(".json") && f !== "manifest.json"
+    );
+
+    const results = await Promise.all(
+      validFiles.map(f => fetchJSON(`${REPO_RAW}/_data/items/${f}${bust}`))
+    );
+
+    ITEMS = results
+      .map((item, index) => normalizeItem(item, index))
+      .filter(item => item !== null);
+
+    _lastFetched = now;
+
   } catch (err) {
-    console.error("Error loading weapon database:", err);
-    throw err;
+    console.error("[Shop] Failed to load items:", err);
+    // Keep existing ITEMS if we have them — don't blank the shop on a refresh failure
+    if (ITEMS.length === 0) ITEMS = [];
   }
+}
+
+// ── Normalize raw JSON into a consistent item shape ───────
+function normalizeItem(raw, index) {
+  if (!raw || !raw.name) return null;
+
+  const category = (raw.category || "other").toLowerCase().trim();
+
+  return {
+    id:           index + 1,
+    // Core fields
+    name:         raw.name         || "Unnamed Item",
+    description:  raw.description  || "",
+    price:        parseFloat(raw.price) || 0,
+    category:     category,
+    level:        parseInt(raw.level)   || 1,
+    saleType:     normalizeSaleType(raw),
+    // Image — use full raw URL so it loads without GitHub Pages rebuild
+    image:        raw.image ? `${REPO_RAW}/${raw.image}?t=${_lastFetched}` : null,
+    // Tags — array, supports both string "a,b,c" and array ["a","b"]
+    tags:         normalizeTags(raw.tags),
+    tagGroups:    normalizeTagGroups(raw),
+    // Availability — true by default
+    available:    raw.availability !== false && raw.available !== false,
+    // Sale fields
+    onSale:       raw.onSale       || false,
+    salePrice:    raw.salePrice    ?? null,
+    globalSaleOn: raw.globalSaleOn || false,
+    salePricePct: raw.salePricePct ?? null,
+    // Fallback emoji if no image
+    emoji:        categoryEmoji(category),
+  };
+}
+
+// ── Helpers ───────────────────────────────────────────────
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  return res.json();
+}
+
+function normalizeTags(tags) {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags.map(t => String(t).trim()).filter(Boolean);
+  if (typeof tags === "string") return tags.split(",").map(t => t.trim()).filter(Boolean);
+  return [];
+}
+
+function categoryEmoji(cat) {
+  const map = {
+    weapon:    "⚔️",
+    armor:     "🛡️",
+    potion:    "🧪",
+    accessory: "💍",
+    scroll:    "📜",
+    food:      "🍖",
+    other:     "🎁",
+  };
+  return map[cat] || "🎁";
+}
+
+
+function normalizeTagGroups(raw) {
+  if (raw.tagGroups && typeof raw.tagGroups === "object") {
+    const out = {};
+    Object.entries(raw.tagGroups).forEach(([k, v]) => { out[k] = normalizeTags(v); });
+    return out;
+  }
+  if (raw.tagsByCategory && typeof raw.tagsByCategory === "object") {
+    const out = {};
+    Object.entries(raw.tagsByCategory).forEach(([k, v]) => { out[k] = normalizeTags(v); });
+    return out;
+  }
+  return { Tags: normalizeTags(raw.tags) };
+}
+
+
+function normalizeSaleType(raw) {
+  const custom = raw.saleTypeCustom || raw.saleType_custom || raw.sale_type_custom;
+  if (custom && String(custom).trim()) return toSaleTypeLabel(custom);
+
+  const selected = raw.saleType || raw.sale_type;
+  if (selected && String(selected).trim()) return toSaleTypeLabel(selected);
+
+  return "Per Item";
+}
+
+function toSaleTypeLabel(value) {
+  const label = String(value).trim().replace(/\s+/g, " ");
+  if (!label) return "Per Item";
+  return label.toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
 }
