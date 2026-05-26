@@ -1,7 +1,5 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const SHEET_ID = "1KZriY6MFzCVBtXZkcVRi36VW6nhtNb0uKmZGXJN8XIM";
-const IMG_BASE = "https://raw.githubusercontent.com/wrathishere/wrathandfriends/main/checkweaponstat/images";
-
 // ── FETCH SHEET AS CSV ────────────────────────────────────────────────────────
 async function fetchSheetCSV(tabName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&t=${Date.now()}`;
@@ -59,10 +57,13 @@ function parseCSV(text) {
 
   const headers = grid[0].map(header => header.trim().toLowerCase());
   const rows = [];
+  let mismatchedColumnRows = 0;
 
   for (let rowIdx = 1; rowIdx < grid.length; rowIdx++) {
     const vals = grid[rowIdx];
     if (vals.length === 0 || (vals.length === 1 && vals[0] === "")) continue;
+
+    if (vals.length !== headers.length) mismatchedColumnRows++;
 
     const obj = {};
     for (let colIdx = 0; colIdx < headers.length; colIdx++) {
@@ -77,6 +78,10 @@ function parseCSV(text) {
       rows.push(obj);
     }
   }
+  if (mismatchedColumnRows > 0) {
+    console.warn(`[weapon-data] ${mismatchedColumnRows} CSV row(s) had a column count different from headers (${headers.length}).`);
+  }
+
   return rows;
 }
 
@@ -106,10 +111,10 @@ function normalizeWeapon(row) {
     : "Swords";
 
   // Read 5 individual level columns — only show buttons for non-empty values
-  const parsedLevels = ["lvl_avl_1", "lvl_avl_2", "lvl_avl_3", "lvl_avl_4", "lvl_avl_5"]
+  const parsedLevels = [...new Set(["lvl_avl_1", "lvl_avl_2", "lvl_avl_3", "lvl_avl_4", "lvl_avl_5"]
     .map(key => cleanVal(getRowVal([key])))
     .filter(v => v !== "" && !isNaN(parseFloat(v)))
-    .map(v => String(parseFloat(v)));
+    .map(v => parseFloat(v)))].sort((a, b) => a - b).map(v => String(v));
 
   const qtyRaw = cleanVal(getRowVal(["quantity_available", "quantity available", "quantity"]));
   const qtyVal = parseInt(qtyRaw, 10);
@@ -148,12 +153,33 @@ function normalizeWeapon(row) {
   return weapon;
 }
 
+
+function validateWeapon(weapon, idx) {
+  const issues = [];
+
+  if (!weapon.name || typeof weapon.name !== "string") issues.push("missing name");
+  if (!weapon.type || typeof weapon.type !== "string") issues.push("missing type");
+  if (!Array.isArray(weapon.levels_available)) issues.push("levels_available must be array");
+  if (typeof weapon.stats !== "object" || weapon.stats === null) issues.push("stats must be object");
+
+  if (issues.length > 0) {
+    console.warn(`[weapon-data] Row ${idx + 1} skipped: ${issues.join(", ")}`, weapon);
+    return false;
+  }
+
+  return true;
+}
+
 // ── LOAD WEAPONS ──────────────────────────────────────────────────────────────
 async function loadWeaponShowcase() {
   try {
     const csv = await fetchSheetCSV("final");
     const rows = parseCSV(csv);
-    return rows.map(r => normalizeWeapon(r));
+    const normalized = rows.map(r => normalizeWeapon(r));
+    const validWeapons = normalized.filter((weapon, idx) => validateWeapon(weapon, idx));
+
+    console.info(`[weapon-data] loaded ${validWeapons.length}/${rows.length} rows`);
+    return validWeapons;
   } catch (err) {
     console.error("Error loading weapon database:", err);
     throw err;
