@@ -10,32 +10,52 @@ async function fetchSheetCSV(tabName) {
   return res.text();
 }
 
-// ── CSV LINE PARSER (Handles quotes and commas) ───────────────────────────────
-function parseCSVLine(line) {
-  const vals = [];
-  let cur = "", inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-      else { inQ = !inQ; }
-    } else if (ch === ',' && !inQ) {
-      vals.push(cur.trim()); cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  vals.push(cur.trim());
-  return vals;
-}
-
-// ── CSV PARSER (1 Row = 1 Weapon) ────────────────────────────────────────────
+// ── CSV PARSER (RFC4180-style: handles quotes, commas, and multiline fields) ─
 function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
+  if (!text || !text.trim()) return [];
 
-  const grid = lines.map(line => parseCSVLine(line));
-  if (grid.length === 0 || grid[0].length === 0) return [];
+  const grid = [];
+  let row = [];
+  let cur = "";
+  let inQ = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (ch === '"') {
+      if (inQ && text[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQ = !inQ;
+      }
+      continue;
+    }
+
+    if (ch === ',' && !inQ) {
+      row.push(cur.trim());
+      cur = "";
+      continue;
+    }
+
+    if ((ch === '\n' || ch === '\r') && !inQ) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cur.trim());
+      grid.push(row);
+      row = [];
+      cur = "";
+      continue;
+    }
+
+    cur += ch;
+  }
+
+  row.push(cur.trim());
+  if (row.length > 1 || row[0] !== "") {
+    grid.push(row);
+  }
+
+  if (grid.length < 2 || grid[0].length === 0) return [];
 
   const headers = grid[0].map(header => header.trim().toLowerCase());
   const rows = [];
@@ -81,7 +101,9 @@ function normalizeWeapon(row) {
   const nameVal = cleanVal(getRowVal(["name"])) || "Unknown Item";
   const thumbFilename = cleanVal(getRowVal(["thumbnail", "image", "thumb"]));
   const rawType = cleanVal(getRowVal(["category", "type", "weapontype", "weapon type"]));
-  const weaponType = rawType ? (rawType.charAt(0).toUpperCase() + rawType.slice(1)) : "Swords";
+  const weaponType = rawType
+    ? rawType.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+    : "Swords";
 
   // Read 5 individual level columns — only show buttons for non-empty values
   const parsedLevels = ["lvl_avl_1", "lvl_avl_2", "lvl_avl_3", "lvl_avl_4", "lvl_avl_5"]
