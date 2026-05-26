@@ -127,7 +127,14 @@ body{margin:0;font-family:'Open Sans',sans-serif;background:var(--bg);color:var(
   margin-left: .3rem;
   font-style: italic;
 }
-
+.card-description {
+  padding: .6rem 1rem .8rem;
+  font-size: .82rem;
+  color: #c9a97a;
+  font-style: italic;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.5;
+}
 /* Slider footer */
 .card-footer {
   background: transparent;
