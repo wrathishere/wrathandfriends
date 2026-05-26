@@ -250,8 +250,10 @@
         </div>
 
         <div class="card-body" id="stats-${idx}">
-          ${statsHtml(w, 1)}
-        </div>
+  ${statsHtml(w, 1)}
+</div>
+
+${w.description ? `<div class="card-description">${w.description}</div>` : ''}
 
         <div class="card-footer">
           <div class="slider-label">
