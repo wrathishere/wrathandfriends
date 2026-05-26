@@ -65,6 +65,15 @@
       return Math.round(base + inc * (level - 1));
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     // Build the stats block HTML dynamically (Safe Version)
     function statsHtml(w, level) {
       let html = '';
@@ -158,8 +167,8 @@
         }
         
         html += `<div class="stat-row">
-          <span class="stat-label-text">${cfg.label}</span>
-          <span class="stat-value">${displayVal}</span>
+          <span class="stat-label-text">${escapeHtml(cfg.label)}</span>
+          <span class="stat-value">${escapeHtml(displayVal)}</span>
         </div>`;
       });
 
@@ -218,7 +227,7 @@
       const imgHtml = hasImage ? `
         <img
           src="${w.image}"
-          alt="${w.name}"
+          alt="${escapeHtml(w.name)}"
           loading="lazy"
           onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
         />
@@ -236,8 +245,8 @@
       return `<article class="card">
         <div class="card-top">
           <div class="card-name-block">
-            <h2 class="name">${w.name}</h2>
-            <p class="type">${w.type}</p>
+            <h2 class="name">${escapeHtml(w.name)}</h2>
+            <p class="type">${escapeHtml(w.type)}</p>
             ${levelsHtml}
           </div>
           <div class="thumb-wrapper">
@@ -253,7 +262,7 @@
   ${statsHtml(w, 1)}
 </div>
 
-${w.description ? `<div class="card-description">${w.description}</div>` : ''}
+${w.description ? `<div class="card-description">${escapeHtml(w.description)}</div>` : ''}
 
         <div class="card-footer">
           <div class="slider-label">
@@ -304,10 +313,12 @@ ${w.description ? `<div class="card-description">${w.description}</div>` : ''}
     function render() {
       const q = search.value.trim().toLowerCase();
       const t = typeFilter.value;
-      const filtered = weapons.filter(w =>
-        (t === 'all' || w.type === t) &&
-        (!q || w.name.toLowerCase().includes(q))
-      );
+      const filtered = weapons
+        .map((weapon, idx) => ({ weapon, idx }))
+        .filter(({ weapon }) =>
+          (t === 'all' || weapon.type === t) &&
+          (!q || weapon.name.toLowerCase().includes(q))
+        );
 
       if (filtered.length === 0) {
         grid.innerHTML = `<div class="empty">No weapons match your search.</div>`;
@@ -315,7 +326,7 @@ ${w.description ? `<div class="card-description">${w.description}</div>` : ''}
       }
 
       grid.innerHTML = filtered
-        .map(w => cardHtml(w, weapons.indexOf(w)))
+        .map(({ weapon, idx }) => cardHtml(weapon, idx))
         .join('');
 
       attachSliders();
