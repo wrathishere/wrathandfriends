@@ -23,7 +23,6 @@
   let activePlayerRow = null;
 
   // Optional global set in index.html:
-  // <script>window.PLAYER_SHEET_CSV = "https://docs.google.com/.../pub?output=csv";</script>
   const PLAYER_SHEET_CSV = window.PLAYER_SHEET_CSV || "";
 
   const WEAPON_BUTTON_LABEL = "Check Available Weapons";
@@ -85,8 +84,7 @@
     "Bonemass",
     "Moder",
     "Yagluth",
-    "Queen",
-    "Fader"
+    "Queen"
   ];
 
   function isBossTagGroup(groupName) {
@@ -128,7 +126,6 @@
       return matchCategory && matchSearch && matchTags && matchRecommendation;
     });
 
-    // If smart sort is active, put strongest recommendation matches first.
     if (recommendationTerms.size > 0) {
       filtered.sort((a, b) => getRecommendationScore(b) - getRecommendationScore(a));
     }
@@ -173,17 +170,17 @@
     const pillsContainer = document.querySelector(".category-pills");
 
     pillsContainer.innerHTML = "";
-const allBtn = document.createElement("button");
-allBtn.className = "pill active";
-allBtn.dataset.category = "all";
-allBtn.textContent = "All Items";
-allBtn.addEventListener("click", () => {
-  document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-  allBtn.classList.add("active");
-  activeCategory = "all";
-  renderGrid();
-});
-pillsContainer.appendChild(allBtn);
+    const allBtn = document.createElement("button");
+    allBtn.className = "pill active";
+    allBtn.dataset.category = "all";
+    allBtn.textContent = "All Items";
+    allBtn.addEventListener("click", () => {
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      allBtn.classList.add("active");
+      activeCategory = "all";
+      renderGrid();
+    });
+    pillsContainer.appendChild(allBtn);
 
     categories.forEach(category => {
       const btn = document.createElement("button");
@@ -281,30 +278,28 @@ pillsContainer.appendChild(allBtn);
     });
   }
 
-function collectTagGroupsFromItems() {
-  const groups = new Map();
+  function collectTagGroupsFromItems() {
+    const groups = new Map();
 
-  ITEMS.forEach(item => {
-    // Use tagGroups if it exists AND has keys, otherwise fall back to flat tags
-    const hasTagGroups = item.tagGroups && Object.keys(item.tagGroups).length > 0;
+    ITEMS.forEach(item => {
+      const hasTagGroups = item.tagGroups && Object.keys(item.tagGroups).length > 0;
 
-    if (hasTagGroups) {
-      Object.entries(item.tagGroups).forEach(([groupName, tags]) => {
-        if (!groups.has(groupName)) groups.set(groupName, new Set());
-        (tags || []).forEach(tag => groups.get(groupName).add(tag));
-      });
-    } else {
-      // Flat tags with no category — put under "Tags"
-      const flatTags = item.tags || [];
-      if (!groups.has("Tags")) groups.set("Tags", new Set());
-      flatTags.forEach(tag => groups.get("Tags").add(tag));
-    }
-  });
+      if (hasTagGroups) {
+        Object.entries(item.tagGroups).forEach(([groupName, tags]) => {
+          if (!groups.has(groupName)) groups.set(groupName, new Set());
+          (tags || []).forEach(tag => groups.get(groupName).add(tag));
+        });
+      } else {
+        const flatTags = item.tags || [];
+        if (!groups.has("Tags")) groups.set("Tags", new Set());
+        flatTags.forEach(tag => groups.get("Tags").add(tag));
+      }
+    });
 
-  return [...groups.entries()]
-    .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
+    return [...groups.entries()]
+      .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
 
   // ── Card rendering ───────────────────────────────────────
   function buildCard(item) {
@@ -325,6 +320,11 @@ function collectTagGroupsFromItems() {
           </div>
           ${categoryExtension}
           ${base.tagsHTML}
+          <div class="card-buy-btn-wrap">
+            <button class="buy-now-btn" type="button">
+              🛒 BUY NOW
+            </button>
+          </div>
         </div>
       </article>`;
   }
@@ -333,15 +333,18 @@ function collectTagGroupsFromItems() {
     const weaponBtn = item.category === "weapon"
       ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
       : "";
+      
     const bulkSlider = item.ifBulk
-      ? `<div class="card-bulk-slider-wrap" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
-           <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity" />
-           <div class="bulk-summary">
-             <span class="bulk-qty-label">Qty: <strong data-bulk-qty>${BULK_MIN_QTY}</strong></span>
-             <span class="bulk-discount-label" data-bulk-discount></span>
+      ? `<div class="card-bulk-qty-wrap" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
+           <div class="qty-selector">
+             <button type="button" class="qty-btn qty-minus" data-qty-change="-1">—</button>
+             <span class="qty-display" data-bulk-qty>${BULK_MIN_QTY}</span>
+             <button type="button" class="qty-btn qty-plus" data-qty-change="1">+</button>
            </div>
+           <span class="bulk-discount-label" data-bulk-discount></span>
          </div>`
       : "";
+      
     const badge = `<div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>`;
     const media = item.image
       ? `<div class="card-img-wrap">${badge}<img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
@@ -380,24 +383,25 @@ function collectTagGroupsFromItems() {
     attachCategoryCardListeners();
   }
 
-function attachCardListeners() {}
-
+  // Intentionally empty per config parameters
+  function attachCardListeners() {}
 
   function attachCategoryCardListeners() {
-    grid.querySelectorAll(".card-action-btn, .bulk-slider").forEach(el => {
+    grid.querySelectorAll(".card-action-btn, .qty-btn, .buy-now-btn").forEach(el => {
       el.addEventListener("click", event => event.stopPropagation());
       el.addEventListener("keydown", event => event.stopPropagation());
     });
 
     grid.querySelectorAll("[data-bulk-controls]").forEach(container => {
-      const slider    = container.querySelector("[data-bulk-slider]");
+      const minusBtn  = container.querySelector(".qty-minus");
+      const plusBtn   = container.querySelector(".qty-plus");
       const qtyEl     = container.querySelector("[data-bulk-qty]");
       const discEl    = container.querySelector("[data-bulk-discount]");
       const card      = container.closest(".item-card");
       const priceEl   = card ? card.querySelector("[data-bulk-price]") : null;
       const unitPrice = Number(container.dataset.unitPrice) || 0;
 
-      if (!slider || !qtyEl) return;
+      if (!qtyEl) return;
 
       const getDiscount = qty => {
         if (qty < 5)   return 0;
@@ -407,18 +411,25 @@ function attachCardListeners() {}
 
       const saleAttr  = priceEl ? priceEl.dataset.salePriceUnit : null;
       const basePrice = saleAttr ? Number(saleAttr) : unitPrice;
+      
+      let currentQty = BULK_MIN_QTY;
 
-      const updateBulkDisplay = () => {
-        const q        = Number(slider.value) || BULK_MIN_QTY;
-        const discount = getDiscount(q);
-        const total    = Math.round(basePrice * q * (1 - discount / 100));
-        qtyEl.textContent  = String(q);
+      const updateBulkDisplay = (newQty) => {
+        currentQty = Math.max(BULK_MIN_QTY, Math.min(BULK_MAX_QTY, newQty));
+        const discount = getDiscount(currentQty);
+        const total    = Math.round(basePrice * currentQty * (1 - discount / 100));
+        
+        qtyEl.textContent  = String(currentQty);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
         if (priceEl) priceEl.textContent = `🪙 ${total.toLocaleString()}`;
       };
 
-      slider.addEventListener("input", updateBulkDisplay);
-      updateBulkDisplay();
+      if (minusBtn && plusBtn) {
+        minusBtn.addEventListener("click", () => updateBulkDisplay(currentQty - 1));
+        plusBtn.addEventListener("click", () => updateBulkDisplay(currentQty + 1));
+      }
+
+      updateBulkDisplay(currentQty);
     });
   }
 
