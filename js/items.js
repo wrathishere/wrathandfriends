@@ -103,6 +103,7 @@ function normalizeSheetItem(raw, index, settings) {
     emoji: categoryEmoji(category),
   };
 }
+
 function normalizeShopSettings(raw) {
   return {
     ...getDefaultShopSettings(),
@@ -259,6 +260,10 @@ function parseDiscount(value) {
 
 function isYes(value) {
   return ["yes", "y", "true", "1", "on"].includes(String(value || "").trim().toLowerCase());
+}
+
+function isNo(value) {
+  return ["no", "n", "false", "0", "off"].includes(String(value || "").trim().toLowerCase());
 }
 
 function isOn(value) {
