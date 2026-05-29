@@ -1,16 +1,341 @@
-/* RPG Card Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap');
+/* ============================================================
+   Wrath & Friends — RPG / Dark Fantasy Theme
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --rpg-bg-radial: radial-gradient(circle at center, #1e1712 0%, #0d0907 100%);
+  --rpg-bg-radial: radial-gradient(circle at center, #1c1511 0%, #0a0705 100%);
+  --rpg-bg-solid: #0d0907;
   --rpg-gold-bright: #e5c158;
   --rpg-gold-mute: #b89742;
   --rpg-gold-dark: #6e5520;
   --rpg-border-color: #3e3125;
   --rpg-font-serif: 'Cinzel', 'Georgia', serif;
+  --rpg-font-sans: 'Open Sans', 'Helvetica Neue', sans-serif;
+  
+  --bg-color: #0d0907;
+  --text-color: #eae1d0;
 }
 
-/* Card Container */
+/* Reset & Core Page Layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--rpg-bg-solid);
+  background-image: radial-gradient(circle at top, #1c1511 0%, #0d0907 80%);
+  color: var(--text-color);
+  font-family: var(--rpg-font-sans);
+  line-height: 1.5;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Header & Branding */
+.site-header {
+  background: rgba(10, 7, 5, 0.95);
+  border-bottom: 2px solid var(--rpg-border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+  padding: 1.5rem 1rem;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.shop-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(229, 193, 88, 0.3));
+}
+
+.shop-title {
+  font-family: var(--rpg-font-serif);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--rpg-gold-bright);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: 1px;
+}
+
+.shop-tagline {
+  font-size: 0.85rem;
+  color: #a89e8c;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Player Controls */
+.player-report-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.player-select {
+  background: #140f0c;
+  border: 1px solid var(--rpg-gold-dark);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-family: var(--rpg-font-sans);
+  font-size: 0.9rem;
+}
+
+.player-select:focus {
+  outline: none;
+  border-color: var(--rpg-gold-bright);
+}
+
+.player-report-btn {
+  background: linear-gradient(180deg, #3e3125 0%, #201710 100%);
+  border: 1px solid var(--rpg-gold-mute);
+  color: #eae1d0;
+  font-family: var(--rpg-font-serif);
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+.player-report-btn:hover {
+  border-color: var(--rpg-gold-bright);
+  color: #fff;
+}
+
+.player-report-btn:active {
+  transform: translateY(1px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Navigation & Filter Bar */
+.filter-bar {
+  background: rgba(15, 11, 8, 0.8);
+  border-bottom: 1px solid var(--rpg-border-color);
+  padding: 1rem;
+}
+
+.filter-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.search-wrap {
+  position: relative;
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rpg-gold-mute);
+}
+
+.search-input {
+  width: 100%;
+  background: #140f0c;
+  border: 1px solid var(--rpg-border-color);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.6rem 1rem 0.6rem 2.2rem;
+  font-size: 0.95rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--rpg-gold-bright);
+  box-shadow: 0 0 5px rgba(229, 193, 88, 0.2);
+}
+
+/* Category Pills */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill {
+  background: rgba(20, 15, 12, 0.7);
+  border: 1px solid var(--rpg-border-color);
+  color: #a89e8c;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill:hover, .pill.active {
+  background: var(--rpg-gold-dark);
+  border-color: var(--rpg-gold-bright);
+  color: #fff;
+}
+
+/* Results Information */
+.results-info {
+  max-width: 1200px;
+  margin: 1.5rem auto 0 auto;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  color: #a89e8c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.results-info span {
+  color: var(--rpg-gold-bright);
+  font-weight: 700;
+}
+
+/* Main Shop Layout */
+.shop-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .shop-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar Tag Filters */
+.tag-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sidebar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--rpg-border-color);
+  padding-bottom: 0.5rem;
+}
+
+.sidebar-title {
+  font-family: var(--rpg-font-serif);
+  color: var(--rpg-gold-bright);
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.sidebar-clear {
+  background: transparent;
+  border: none;
+  color: #7a6e63;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sidebar-clear:hover {
+  color: var(--rpg-gold-bright);
+}
+
+.tag-group {
+  background: rgba(20, 15, 12, 0.5);
+  border: 1px solid var(--rpg-border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tag-group-btn {
+  width: 100%;
+  background: rgba(10, 7, 5, 0.8);
+  border: none;
+  border-bottom: 1px solid var(--rpg-border-color);
+  color: #eae1d0;
+  font-family: var(--rpg-font-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tag-group-btn::after {
+  content: '▼';
+  font-size: 0.7rem;
+  color: var(--rpg-gold-mute);
+  transition: transform 0.2s;
+}
+
+.tag-group.open .tag-group-btn::after {
+  transform: rotate(-180deg);
+}
+
+.tag-group-options {
+  display: none;
+  padding: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tag-group.open .tag-group-options {
+  display: flex;
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #bfae93;
+  cursor: pointer;
+}
+
+.tag-option input {
+  accent-color: var(--rpg-gold-mute);
+}
+
+/* Shop Item Grid */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  align-content: start;
+}
+
+/* RPG Styled Cards */
 .item-card {
   background: var(--rpg-bg-radial);
   border: 2px solid var(--rpg-border-color);
@@ -35,7 +360,7 @@
     inset 0 0 15px rgba(0, 0, 0, 0.6);
 }
 
-/* Sale Ribbon (Hanging Flag Style) */
+/* Sale Hanging Flag */
 .sale-ribbon {
   position: absolute;
   top: -2px;
@@ -53,9 +378,10 @@
   border-radius: 0 0 4px 4px;
   clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  z-index: 3;
 }
 
-/* Card Badge (Top Right Container) */
+/* Badge (Top Right) */
 .card-badge {
   position: absolute;
   top: 15px;
@@ -74,7 +400,7 @@
   text-transform: uppercase;
 }
 
-/* Image Wrapper */
+/* Image container */
 .card-img-wrap {
   width: 100%;
   aspect-ratio: 1.1;
@@ -94,7 +420,12 @@
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.8));
 }
 
-/* Qty Selector (Minus / Plus Interface) */
+.card-emoji {
+  font-size: 3.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+/* Quantity Adjuster controls */
 .card-bulk-qty-wrap {
   display: flex;
   flex-direction: column;
@@ -144,7 +475,7 @@
   font-weight: 600;
 }
 
-/* Title Styling */
+/* Titles */
 .card-name {
   font-family: var(--rpg-font-serif);
   color: #eae1d0;
@@ -168,7 +499,7 @@
 .card-name::before { --direction: right; }
 .card-name::after { --direction: left; }
 
-/* Price Wrapper */
+/* Pricing Elements */
 .card-footer {
   display: flex;
   justify-content: center;
@@ -198,7 +529,7 @@
   text-shadow: 0 0 5px rgba(229, 193, 88, 0.15);
 }
 
-/* RPG Tags */
+/* Category item tags styling */
 .card-tags {
   display: flex;
   flex-wrap: wrap;
@@ -219,7 +550,7 @@
   box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
 }
 
-/* RPG Style Action Button */
+/* RPG Buy Button Layout */
 .card-buy-btn-wrap {
   margin-top: auto;
   padding-top: 14px;
@@ -256,4 +587,62 @@
 
 .buy-now-btn:active {
   transform: translateY(1px);
+}
+
+/* Empty State Styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Modals Setup */
+.modal-backdrop, .report-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card, .report-modal {
+  background: var(--rpg-bg-radial);
+  border: 2px solid var(--rpg-gold-mute);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #7a6e63;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.modal-close:hover {
+  color: var(--rpg-gold-bright);
 }
