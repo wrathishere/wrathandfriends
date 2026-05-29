@@ -47,7 +47,6 @@ async function loadItemsFromSheet(force = false) {
     _lastFetched = now;
   } catch (err) {
     console.error("[Shop] Failed to load items:", err);
-    // Keep existing ITEMS if we have them — don't blank the shop on a refresh failure.
     if (ITEMS.length === 0) ITEMS = [];
   }
 }
@@ -77,7 +76,6 @@ function normalizeSheetItem(raw, index, settings) {
   const availableRaw = getCell(raw, "available");
   const available = availableRaw === "" ? true : !isNo(availableRaw);
 
-  // Fetch directly from "saletype" column, falling back to bulk-check logic if empty
   const sheetSaleType = getCell(raw, "saletype");
   const saleType = sheetSaleType 
     ? sheetSaleType 
@@ -156,7 +154,6 @@ function withCacheBust(url, value) {
   return `${url}${separator}t=${value}`;
 }
 
-// Handles quoted commas in CSV rows.
 function parseCSV(csvText) {
   const rows = [];
   let row = [];
