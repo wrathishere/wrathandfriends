@@ -52,12 +52,12 @@
 
   // ── Sale helpers ────────────────────────────────────────
   function getSaleInfo(item) {
-    if (item.onSale === true && item.salePrice !== null && item.salePrice !== "" && item.salePrice !== undefined) {
-      return { onSale: true, salePrice: item.salePrice };
+    if (item.globalSaleOn === true && item.salePricePct !== null && item.salePricePct !== undefined) {
+      return { onSale: true, salePrice: item.salePricePct };
     }
 
-    if (item.globalSaleOn === true && item.onSale !== true && item.salePricePct !== null && item.salePricePct !== undefined) {
-      return { onSale: true, salePrice: item.salePricePct };
+    if (item.onSale === true && item.salePrice !== null && item.salePrice !== "" && item.salePrice !== undefined) {
+      return { onSale: true, salePrice: item.salePrice };
     }
 
     return { onSale: false, salePrice: null };
@@ -70,11 +70,41 @@
       return `
         <div class="price-wrap">
           <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.category === "bulk" ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
+          <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}" ${item.category === "bulk" ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
+    return `<span class="${large ? "modal-price" : "card-price"}" ${item.ifBulk ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
+  }
+
+  // ── Boss progression hierarchy ──────────────────────────
+  const BOSS_TAG_GROUP = "Boss Kill";
+  const bossHierarchy = window.BOSS_HIERARCHY || [
+    "Eikthyr",
+    "Elder",
+    "Bonemass",
+    "Moder",
+    "Yagluth",
+    "Queen"
+  ];
+
+  function isBossTagGroup(groupName) {
+    return String(groupName || "").toLowerCase() === BOSS_TAG_GROUP.toLowerCase();
+  }
+
+  function getInheritedBossTags(bossName) {
+    const bossIndex = bossHierarchy.findIndex(boss => boss.toLowerCase() === String(bossName || "").toLowerCase());
+    if (bossIndex < 0) return [String(bossName || "").toLowerCase()].filter(Boolean);
+    return bossHierarchy.slice(0, bossIndex + 1).map(boss => boss.toLowerCase());
+  }
+
+  function getRecommendationTermsWithBossInheritance() {
+    const expanded = new Set();
+    recommendationTerms.forEach(term => {
+      expanded.add(term);
+      getInheritedBossTags(term).forEach(boss => expanded.add(boss));
+    });
+    return expanded;
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -110,7 +140,10 @@
 
     for (const [groupName, selectedTags] of activeTagFilters.entries()) {
       const groupTags = (item.tagGroups?.[groupName] || []).map(tag => tag.toLowerCase());
-      const hasAnyTagInGroup = [...selectedTags].some(tag => groupTags.includes(tag));
+      const selectedTagsForGroup = isBossTagGroup(groupName)
+        ? [...selectedTags].flatMap(tag => getInheritedBossTags(tag))
+        : [...selectedTags];
+      const hasAnyTagInGroup = selectedTagsForGroup.some(tag => groupTags.includes(tag));
       if (!hasAnyTagInGroup) return false;
     }
 
@@ -124,7 +157,7 @@
     const tags = item.tags.map(tag => tag.toLowerCase());
 
     let score = 0;
-    recommendationTerms.forEach(term => {
+    getRecommendationTermsWithBossInheritance().forEach(term => {
       if (!term) return;
       if (name.includes(term)) score += 3;
       if (tags.some(tag => tag.includes(term))) score += 2;
@@ -299,7 +332,7 @@ function collectTagGroupsFromItems() {
     const weaponBtn = item.category === "weapon"
       ? `<div class="card-weapon-btn-wrap"><a class="card-action-btn weapon-action-btn" href="${escHtml(WEAPON_PAGE_URL)}" target="_blank" rel="noopener noreferrer">${WEAPON_BUTTON_LABEL}</a></div>`
       : "";
-    const bulkSlider = item.category === "bulk"
+    const bulkSlider = item.ifBulk
       ? `<div class="card-bulk-slider-wrap" data-bulk-controls data-unit-price="${Number(item.price) || 0}">
            <input class="bulk-slider" data-bulk-slider type="range" min="${BULK_MIN_QTY}" max="${BULK_MAX_QTY}" value="${BULK_MIN_QTY}" aria-label="Select quantity" />
            <div class="bulk-summary">
