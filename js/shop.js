@@ -85,7 +85,8 @@
     "Bonemass",
     "Moder",
     "Yagluth",
-    "Queen"
+    "Queen",
+    "Fader"
   ];
 
   function isBossTagGroup(groupName) {
