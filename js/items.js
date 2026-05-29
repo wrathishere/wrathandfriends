@@ -74,6 +74,15 @@ function normalizeSheetItem(raw, index, settings) {
   if (typeTags.length) tagGroups.Type = typeTags;
   if (tokenTags.length) tagGroups.Token = tokenTags;
 
+  const availableRaw = getCell(raw, "available");
+  const available = availableRaw === "" ? true : !isNo(availableRaw);
+
+  // Fetch directly from "saletype" column, falling back to bulk-check logic if empty
+  const sheetSaleType = getCell(raw, "saletype");
+  const saleType = sheetSaleType 
+    ? sheetSaleType 
+    : (category === "bulk" || isYes(getCell(raw, "ifbulk")) ? "Per Stack" : "Per Item");
+
   return {
     id: index + 1,
     name: getCell(raw, "Name") || "Unnamed Item",
@@ -81,11 +90,11 @@ function normalizeSheetItem(raw, index, settings) {
     price,
     category,
     level: 1,
-    saleType: category === "bulk" || isYes(getCell(raw, "ifbulk")) ? "Per Stack" : "Per Item",
+    saleType,
     image: normalizeImage(getCell(raw, "image")),
     tags: [...bossTags, ...typeTags, ...tokenTags],
     tagGroups,
-    available: isYes(getCell(raw, "available")),
+    available,
     ifBulk: isYes(getCell(raw, "ifbulk")),
     onSale,
     salePrice,
@@ -94,7 +103,6 @@ function normalizeSheetItem(raw, index, settings) {
     emoji: categoryEmoji(category),
   };
 }
-
 function normalizeShopSettings(raw) {
   return {
     ...getDefaultShopSettings(),
