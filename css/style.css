@@ -201,65 +201,7 @@ body {
   margin: 1.25rem auto 3rem;
   padding: 0 2rem;
 }
-.item-card::before {
-  content: '';
-  position: absolute;
-  
-  /* Coordinates inset inside the border */
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  
-  /* Thin inner framing line */
-  border: 1px solid rgba(184, 151, 66, 0.25);
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: 1;
-}
 
-/* Create Corner Brackets (Top Left / Bottom Right) */
-.item-card::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
-  pointer-events: none;
-  z-index: 1;
-  
-  /* SVG brackets rendered inside CSS */
-  background-image: 
-    /* Top-Left Bracket */
-    linear-gradient(to right, var(--gold-dim) 12px, transparent 12px),
-    linear-gradient(to bottom, var(--gold-dim) 12px, transparent 12px),
-    /* Top-Right Bracket */
-    linear-gradient(to left, var(--gold-dim) 12px, transparent 12px),
-    linear-gradient(to bottom, var(--gold-dim)) 12px, transparent 12px),
-    /* Bottom-Left Bracket */
-    linear-gradient(to right, var(--gold-dim) 12px, transparent 12px),
-    linear-gradient(to top, var(--gold-dim) 12px, transparent 12px),
-    /* Bottom-Right Bracket */
-    linear-gradient(to left, var(--gold-dim) 12px, transparent 12px),
-    linear-gradient(to top, var(--gold-dim) 12px, transparent 12px);
-
-  background-position: 
-    top left, top left,
-    top right, top right,
-    bottom left, bottom left,
-    bottom right, bottom right;
-    
-  background-size: 
-    12px 2px, 2px 12px,
-    12px 2px, 2px 12px,
-    12px 2px, 2px 12px,
-    12px 2px, 2px 12px;
-    
-  background-repeat: no-repeat;
-  opacity: 0.65;
-  transition: opacity 0.2s ease;
-}
 /* ── Item Card — fixed square tile ───────────────────────── */
 .item-card {
   position: relative;
@@ -762,6 +704,17 @@ body {
   border-color: var(--gold);
   box-shadow: 0 4px 10px rgba(176, 125, 46, 0.2);
 }
+
+
+
+.bulk-topline,
+
+
+.bulk-qty,
+
+
+
+
 /* ── Bulk slider in image ─────────────────────────────── */
 
 /* ── Bulk slider inside image ────────────────────────────── */
