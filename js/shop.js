@@ -167,12 +167,16 @@
 
     const name = item.name.toLowerCase();
     const tags = item.tags.map(tag => tag.toLowerCase());
+    const category = (item.category || "").toLowerCase();
+    const description = (item.description || "").toLowerCase();
 
     let score = 0;
     getRecommendationTermsWithBossInheritance().forEach(term => {
       if (!term) return;
       if (name.includes(term)) score += 3;
       if (tags.some(tag => tag.includes(term))) score += 2;
+      if (category.includes(term) || term.includes(category)) score += 2;
+      if (description.includes(term)) score += 1;
     });
 
     return score;
