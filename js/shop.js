@@ -75,7 +75,7 @@
           <span class="price-label">Price</span>
           <div class="price-wrap">
             <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
-            <span class="price-divider" aria-hidden="true">→</span>
+            <span class="price-divider" aria-hidden="true">↓</span>
             <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
           </div>
         </div>`;
