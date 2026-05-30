@@ -201,7 +201,7 @@ body {
   margin: 1.25rem auto 3rem;
   padding: 0 2rem;
 }
-item-card::before {
+.item-card::before {
   content: '';
   position: absolute;
   
@@ -232,17 +232,17 @@ item-card::before {
   /* SVG brackets rendered inside CSS */
   background-image: 
     /* Top-Left Bracket */
-    linear-gradient(to right, var(--rpg-gold-mute) 12px, transparent 12px),
-    linear-gradient(to bottom, var(--rpg-gold-mute) 12px, transparent 12px),
+    linear-gradient(to right, var(--gold-dim) 12px, transparent 12px),
+    linear-gradient(to bottom, var(--gold-dim) 12px, transparent 12px),
     /* Top-Right Bracket */
-    linear-gradient(to left, var(--rpg-gold-mute) 12px, transparent 12px),
-    linear-gradient(to bottom, var(--rpg-gold-mute) 12px, transparent 12px),
+    linear-gradient(to left, var(--gold-dim) 12px, transparent 12px),
+    linear-gradient(to bottom, var(--gold-dim)) 12px, transparent 12px),
     /* Bottom-Left Bracket */
-    linear-gradient(to right, var(--rpg-gold-mute) 12px, transparent 12px),
-    linear-gradient(to top, var(--rpg-gold-mute) 12px, transparent 12px),
+    linear-gradient(to right, var(--gold-dim) 12px, transparent 12px),
+    linear-gradient(to top, var(--gold-dim) 12px, transparent 12px),
     /* Bottom-Right Bracket */
-    linear-gradient(to left, var(--rpg-gold-mute) 12px, transparent 12px),
-    linear-gradient(to top, var(--rpg-gold-mute) 12px, transparent 12px);
+    linear-gradient(to left, var(--gold-dim) 12px, transparent 12px),
+    linear-gradient(to top, var(--gold-dim) 12px, transparent 12px);
 
   background-position: 
     top left, top left,
@@ -762,17 +762,6 @@ item-card::before {
   border-color: var(--gold);
   box-shadow: 0 4px 10px rgba(176, 125, 46, 0.2);
 }
-
-
-
-.bulk-topline,
-
-
-.bulk-qty,
-
-
-
-
 /* ── Bulk slider in image ─────────────────────────────── */
 
 /* ── Bulk slider inside image ────────────────────────────── */
