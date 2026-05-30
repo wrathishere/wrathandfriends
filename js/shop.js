@@ -159,12 +159,11 @@
       return matchCategory && matchSearch && matchesTagFilters(item);
     });
 
-    // Smart Sort should show only relevant recommendations, ranked strongest first.
+    // Smart Sort should prioritize recommendations without hiding otherwise valid shop items.
     if (recommendationTerms.size > 0) {
       const expandedTerms = getRecommendationTermsWithBossInheritance();
       return filtered
         .map((item, index) => ({ item, index, score: getRecommendationScore(item, expandedTerms) }))
-        .filter(entry => entry.score > 0)
         .sort((a, b) => (b.score - a.score) || (a.index - b.index))
         .map(entry => entry.item);
     }
