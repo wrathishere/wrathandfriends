@@ -36,6 +36,8 @@
   const emptyState = document.getElementById("empty-state");
   const itemCount = document.getElementById("item-count");
   const searchInput = document.getElementById("search-input");
+  const shopTagline = document.getElementById("shop-tagline");
+  const shopMenuLinks = document.getElementById("shop-menu-links");
 
   const modalBackdrop = document.getElementById("modal-backdrop");
   const modalContent = document.getElementById("modal-content");
@@ -65,16 +67,25 @@
 
   function priceHTML(item, large = false) {
     const { onSale, salePrice } = getSaleInfo(item);
+    const panelClass = large ? "price-panel modal-price-panel" : "price-panel";
 
     if (onSale) {
       return `
-        <div class="price-wrap">
-          <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
-          <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
+        <div class="${panelClass}">
+          <span class="price-label">Price</span>
+          <div class="price-wrap">
+            <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
+            <span class="price-divider" aria-hidden="true">→</span>
+            <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
+          </div>
         </div>`;
     }
 
-    return `<span class="${large ? "modal-price" : "card-price"}" ${item.ifBulk ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>`;
+    return `
+      <div class="${panelClass}">
+        <span class="price-label">Price</span>
+        <span class="${large ? "modal-price" : "card-price"}" ${item.ifBulk ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>
+      </div>`;
   }
 
   // ── Boss progression hierarchy ──────────────────────────
@@ -316,6 +327,7 @@ function collectTagGroupsFromItems() {
     return `
       <article class="item-card${onSale ? " on-sale" : ""}${recommendationScore > 0 ? " rec-match" : ""}"
         data-id="${item.id}" tabindex="0" role="button" aria-label="View details for ${escHtml(item.name)}">
+        <div class="card-frame-gem" aria-hidden="true"></div>
         ${onSale ? `<span class="sale-ribbon">SALE</span>` : ""}
         ${base.media}
         <div class="card-info">
@@ -344,8 +356,8 @@ function collectTagGroupsFromItems() {
       : "";
     const badge = `<div class="card-badge">${escHtml(item.saleType || "Per Item")}</div>`;
     const media = item.image
-      ? `<div class="card-img-wrap">${badge}<img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
-      : `<div class="card-img-wrap">${badge}<div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
+      ? `<div class="card-img-wrap">${badge}<div class="card-img-aura" aria-hidden="true"></div><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
+      : `<div class="card-img-wrap">${badge}<div class="card-img-aura" aria-hidden="true"></div><div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
 
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
@@ -356,6 +368,40 @@ function collectTagGroupsFromItems() {
 
   function buildCategoryCardExtension(item) {
     return "";
+  }
+
+  function renderShopHeaderSettings() {
+    const settings = window.SHOP_SETTINGS || SHOP_SETTINGS || {};
+    const description = String(settings.shopDescription || "").trim() || "For Friends by the friends";
+
+    if (shopTagline) shopTagline.textContent = description;
+
+    if (!shopMenuLinks) return;
+
+    const menuItems = [
+      { name: settings.menu1Name, link: settings.menu1Link },
+      { name: settings.menu2Name, link: settings.menu2Link },
+      { name: settings.menu3Name, link: settings.menu3Link }
+    ].filter(item => hasValidMenuItem(item));
+
+    shopMenuLinks.innerHTML = menuItems
+      .map(item => `<a class="shop-menu-link" href="${escHtml(item.link)}" target="_blank" rel="noopener noreferrer">${escHtml(item.name)}</a>`)
+      .join("");
+
+    shopMenuLinks.classList.toggle("is-empty", menuItems.length === 0);
+  }
+
+  function hasValidMenuItem(item) {
+    const name = String(item.name || "").trim();
+    const link = String(item.link || "").trim();
+    if (!name || !link) return false;
+
+    try {
+      const url = new URL(link, window.location.href);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch (error) {
+      return false;
+    }
   }
 
   function renderGrid() {
@@ -671,6 +717,7 @@ function attachCardListeners() {}
       if (!modalBackdrop.hasAttribute("hidden")) return;
 
       await loadItemsFromSheet(true);
+      renderShopHeaderSettings();
       buildCategoryPills();
       buildTagSidebar();
       renderGrid();
@@ -688,6 +735,7 @@ function attachCardListeners() {}
       return;
     }
 
+    renderShopHeaderSettings();
     buildCategoryPills();
     buildTagSidebar();
     renderGrid();

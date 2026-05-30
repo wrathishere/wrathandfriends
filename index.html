@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260530-premium-cards-2" />
 </head>
 <body>
 
@@ -18,7 +18,7 @@
         <img src="images/logo.png" alt="Wrath and Friends" class="brand-icon" onerror="this.style.display='none'" />
         <div>
           <h1 class="shop-title">Wrath &amp; Friends</h1>
-          <p class="shop-tagline">For Friends by the friends</p>
+          <p class="shop-tagline" id="shop-tagline">For Friends by the friends</p>
         </div>
       </div>
       <div class="player-report-controls">
@@ -49,6 +49,9 @@
       </div>
     </div>
   </nav>
+
+  <!-- Spreadsheet-driven shop menu links -->
+  <div class="shop-menu-links" id="shop-menu-links" aria-label="Shop menu links"></div>
 
   <!-- Results count -->
   <div class="results-info" aria-live="polite">
@@ -86,7 +89,7 @@
   <script>window.SHOP_SETTINGS_SHEET_CSV = "https://docs.google.com/spreadsheets/d/1RoFJQlR974Ut8XNJkFqYKdo9lbsbYa3BbtFxWDvVZ4c/gviz/tq?tqx=out:csv&sheet=settings";</script>
   <script>window.PLAYER_SHEET_CSV = "https://docs.google.com/spreadsheets/d/1Z09iAqbN-d0h7Jm4LCGG2BDoEJY-ZWZwyFFf6QrQloQ/gviz/tq?tqx=out:csv&sheet=Sheet3";</script>
   <script>window.WEAPON_PAGE_URL = "https://wrathishere.github.io/wrathandfriends/checkweaponstat/";</script>
-  <script src="js/items.js"></script>
-  <script src="js/shop.js"></script>
+  <script src="js/items.js?v=20260530-premium-cards-2"></script>
+  <script src="js/shop.js?v=20260530-premium-cards-2"></script>
 </body>
 </html>
