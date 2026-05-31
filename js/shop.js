@@ -18,6 +18,12 @@
   // Smart sort state
   let recommendationTerms = new Set();
 
+  const RECOMMENDATION_COLUMNS = [
+    ["Manufacturing Buy Suggestion"],
+    ["Retail Buy Suggestion"],
+    ["Wholesale Buy Suggestion", "WholeSale Buy Suggestion"]
+  ];
+
   // Player report state
   let playerRows = [];
   let activePlayerRow = null;
@@ -110,13 +116,33 @@
     return bossHierarchy.slice(0, bossIndex + 1).map(boss => boss.toLowerCase());
   }
 
+  function normalizeRecommendationTerm(value) {
+    return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+  }
+
+  function compactRecommendationTerm(value) {
+    return normalizeRecommendationTerm(value).replace(/[^a-z0-9]/g, "");
+  }
+
   function getRecommendationTermsWithBossInheritance() {
     const expanded = new Set();
     recommendationTerms.forEach(term => {
-      expanded.add(term);
-      getInheritedBossTags(term).forEach(boss => expanded.add(boss));
+      const normalizedTerm = normalizeRecommendationTerm(term);
+      if (!normalizedTerm) return;
+
+      expanded.add(normalizedTerm);
+      getInheritedBossTags(normalizedTerm).forEach(boss => expanded.add(boss));
     });
     return expanded;
+  }
+
+  function getRecommendationValues(row) {
+    if (!row) return [];
+
+    return RECOMMENDATION_COLUMNS.flatMap(columnAliases => {
+      const value = columnAliases.map(alias => row[alias]).find(Boolean);
+      return splitRecommendationList(value);
+    });
   }
 
   // ── Filtering + sorting ─────────────────────────────────
@@ -124,24 +150,27 @@
     const filtered = ITEMS.filter(item => {
       if (item.available === false) return false;
 
-      const matchCategory = activeCategory === "all" || item.category === activeCategory;
-
-      const q = searchQuery.toLowerCase();
+      const itemCategory = String(item.category || "");
+      const matchCategory = activeCategory === "all" || itemCategory === activeCategory;
+      const q = normalizeRecommendationTerm(searchQuery);
+      const tags = Array.isArray(item.tags) ? item.tags : [];
       const matchSearch = !q ||
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        item.tags.some(tag => tag.toLowerCase().includes(q));
+        String(item.name || "").toLowerCase().includes(q) ||
+        String(item.description || "").toLowerCase().includes(q) ||
+        itemCategory.toLowerCase().includes(q) ||
+        tags.some(tag => String(tag).toLowerCase().includes(q));
 
-      const matchTags = matchesTagFilters(item);
-      const matchRecommendation = recommendationTerms.size === 0 || getRecommendationScore(item) > 0;
-
-      return matchCategory && matchSearch && matchTags && matchRecommendation;
+      return matchCategory && matchSearch && matchesTagFilters(item);
     });
 
-    // If smart sort is active, put strongest recommendation matches first.
+    // Smart Sort should show only relevant recommendations, ranked strongest first.
     if (recommendationTerms.size > 0) {
-      filtered.sort((a, b) => getRecommendationScore(b) - getRecommendationScore(a));
+      const expandedTerms = getRecommendationTermsWithBossInheritance();
+      return filtered
+        .map((item, index) => ({ item, index, score: getRecommendationScore(item, expandedTerms) }))
+        .filter(entry => entry.score > 0)
+        .sort((a, b) => (b.score - a.score) || (a.index - b.index))
+        .map(entry => entry.item);
     }
 
     return filtered;
@@ -151,7 +180,7 @@
     if (!activeTagFilters.size) return true;
 
     for (const [groupName, selectedTags] of activeTagFilters.entries()) {
-      const groupTags = (item.tagGroups?.[groupName] || []).map(tag => tag.toLowerCase());
+      const groupTags = (item.tagGroups?.[groupName] || []).map(tag => String(tag).toLowerCase());
       const selectedTagsForGroup = isBossTagGroup(groupName)
         ? [...selectedTags].flatMap(tag => getInheritedBossTags(tag))
         : [...selectedTags];
@@ -162,21 +191,28 @@
     return true;
   }
 
-  function getRecommendationScore(item) {
-    if (!recommendationTerms.size) return 0;
+  function getRecommendationScore(item, expandedTerms = getRecommendationTermsWithBossInheritance()) {
+    if (!recommendationTerms.size || !expandedTerms.size) return 0;
 
-    const name = item.name.toLowerCase();
-    const tags = item.tags.map(tag => tag.toLowerCase());
-    const category = (item.category || "").toLowerCase();
-    const description = (item.description || "").toLowerCase();
+    const name = normalizeRecommendationTerm(item.name);
+    const compactName = compactRecommendationTerm(item.name);
+    const tags = (Array.isArray(item.tags) ? item.tags : []).map(normalizeRecommendationTerm);
+    const compactTags = (Array.isArray(item.tags) ? item.tags : []).map(compactRecommendationTerm);
 
     let score = 0;
-    getRecommendationTermsWithBossInheritance().forEach(term => {
-      if (!term) return;
-      if (name.includes(term)) score += 3;
-      if (tags.some(tag => tag.includes(term))) score += 2;
-      if (category.includes(term) || term.includes(category)) score += 2;
-      if (description.includes(term)) score += 1;
+    expandedTerms.forEach(term => {
+      const compactTerm = compactRecommendationTerm(term);
+      if (!term || !compactTerm) return;
+
+      if (name === term || compactName === compactTerm) score += 10;
+      else if (name.includes(term) || compactName.includes(compactTerm)) score += 6;
+
+      tags.forEach((tag, index) => {
+        const compactTag = compactTags[index];
+        if (!tag || !compactTag) return;
+        if (tag === term || compactTag === compactTerm) score += 5;
+        else if (tag.includes(term) || compactTag.includes(compactTerm)) score += 3;
+      });
     });
 
     return score;
@@ -188,17 +224,17 @@
     const pillsContainer = document.querySelector(".category-pills");
 
     pillsContainer.innerHTML = "";
-const allBtn = document.createElement("button");
-allBtn.className = "pill active";
-allBtn.dataset.category = "all";
-allBtn.textContent = "All Items";
-allBtn.addEventListener("click", () => {
-  document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-  allBtn.classList.add("active");
-  activeCategory = "all";
-  renderGrid();
-});
-pillsContainer.appendChild(allBtn);
+    const allBtn = document.createElement("button");
+    allBtn.className = "pill active";
+    allBtn.dataset.category = "all";
+    allBtn.textContent = "All Items";
+    allBtn.addEventListener("click", () => {
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      allBtn.classList.add("active");
+      activeCategory = "all";
+      renderGrid();
+    });
+    pillsContainer.appendChild(allBtn);
 
     categories.forEach(category => {
       const btn = document.createElement("button");
@@ -296,30 +332,30 @@ pillsContainer.appendChild(allBtn);
     });
   }
 
-function collectTagGroupsFromItems() {
-  const groups = new Map();
+  function collectTagGroupsFromItems() {
+    const groups = new Map();
 
-  ITEMS.forEach(item => {
-    // Use tagGroups if it exists AND has keys, otherwise fall back to flat tags
-    const hasTagGroups = item.tagGroups && Object.keys(item.tagGroups).length > 0;
+    ITEMS.forEach(item => {
+      // Use tagGroups if it exists AND has keys, otherwise fall back to flat tags.
+      const hasTagGroups = item.tagGroups && Object.keys(item.tagGroups).length > 0;
 
-    if (hasTagGroups) {
-      Object.entries(item.tagGroups).forEach(([groupName, tags]) => {
-        if (!groups.has(groupName)) groups.set(groupName, new Set());
-        (tags || []).forEach(tag => groups.get(groupName).add(tag));
-      });
-    } else {
-      // Flat tags with no category — put under "Tags"
-      const flatTags = item.tags || [];
-      if (!groups.has("Tags")) groups.set("Tags", new Set());
-      flatTags.forEach(tag => groups.get("Tags").add(tag));
-    }
-  });
+      if (hasTagGroups) {
+        Object.entries(item.tagGroups).forEach(([groupName, tags]) => {
+          if (!groups.has(groupName)) groups.set(groupName, new Set());
+          (tags || []).forEach(tag => groups.get(groupName).add(tag));
+        });
+      } else {
+        // Flat tags with no category — put under "Tags".
+        const flatTags = item.tags || [];
+        if (!groups.has("Tags")) groups.set("Tags", new Set());
+        flatTags.forEach(tag => groups.get("Tags").add(tag));
+      }
+    });
 
-  return [...groups.entries()]
-    .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
+    return [...groups.entries()]
+      .map(([name, tagSet]) => ({ name, tags: [...tagSet].sort((a, b) => a.localeCompare(b)) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
 
   // ── Card rendering ───────────────────────────────────────
   function buildCard(item) {
@@ -430,7 +466,18 @@ function collectTagGroupsFromItems() {
     attachCategoryCardListeners();
   }
 
-function attachCardListeners() {}
+  function attachCardListeners() {
+    grid.querySelectorAll(".item-card").forEach(card => {
+      const openCardModal = () => openModal(Number(card.dataset.id));
+
+      card.addEventListener("click", openCardModal);
+      card.addEventListener("keydown", event => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        openCardModal();
+      });
+    });
+  }
 
 
   function attachCategoryCardListeners() {
@@ -541,7 +588,7 @@ function attachCardListeners() {}
 
     const manufacturing = splitRecommendationList(row["Manufacturing Buy Suggestion"]);
     const retail = splitRecommendationList(row["Retail Buy Suggestion"]);
-    const wholesale = splitRecommendationList(row["WholeSale Buy Suggestion"]);
+    const wholesale = splitRecommendationList(row["Wholesale Buy Suggestion"] || row["WholeSale Buy Suggestion"]);
 
     reportContent.innerHTML = `
       <div class="report-header">
@@ -591,17 +638,18 @@ function attachCardListeners() {}
   function applyRecommendationFilter() {
     if (!activePlayerRow) return;
 
-    const allTerms = [
-      "Manufacturing Buy Suggestion",
-      "Retail Buy Suggestion",
-      "Wholesale Buy Suggestion"
-    ].flatMap(key => splitRecommendationList(activePlayerRow[key]));
+    recommendationTerms = new Set(
+      getRecommendationValues(activePlayerRow)
+        .map(normalizeRecommendationTerm)
+        .filter(Boolean)
+    );
 
-    recommendationTerms = new Set(allTerms.map(term => term.toLowerCase()));
     renderGrid();
     closeReport();
 
-    if (clearSortBtn) clearSortBtn.classList.remove("hidden");
+    if (clearSortBtn) {
+      clearSortBtn.classList.toggle("hidden", recommendationTerms.size === 0);
+    }
   }
 
   function clearRecommendationFilter() {
