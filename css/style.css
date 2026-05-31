@@ -3,7 +3,7 @@
    Warm ivory + amber — modern game marketplace, light theme
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&family=Caesar+Dressing&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   /* Surfaces */
@@ -41,7 +41,7 @@
 
   /* Misc */
   --shadow:          rgba(0, 0, 0, 0.07);
-  --font-display:    'Caesar Dressing', Georgia, serif;
+  --font-display:    'Open Sans', Arial, sans-serif;
   --font-body:       'Averia Serif Libre', Georgia, serif;
   --radius:          8px;
   --radius-lg:       12px;
@@ -382,7 +382,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Sale Badge ───────────────────────────────────────────── */
 .sale-ribbon {
   position: absolute;
-  top: 0.5rem;
+  top: 0.25rem;
   left: 0.5rem;
   display: grid;
   place-items: center;
