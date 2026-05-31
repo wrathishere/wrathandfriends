@@ -159,14 +159,21 @@
       return matchCategory && matchSearch && matchesTagFilters(item);
     });
 
-    // Smart Sort should prioritize recommendations without hiding otherwise valid shop items.
-    if (recommendationTerms.size > 0) {
-      const expandedTerms = getRecommendationTermsWithBossInheritance();
-      return filtered
-        .map((item, index) => ({ item, index, score: getRecommendationScore(item, expandedTerms) }))
-        .sort((a, b) => (b.score - a.score) || (a.index - b.index))
-        .map(entry => entry.item);
-    }
+ if (recommendationTerms.size > 0) {
+    const expandedTerms = getRecommendationTermsWithBossInheritance();
+    return filtered
+      .map((item, index) => ({ 
+        item, 
+        index, 
+        score: getRecommendationScore(item, expandedTerms) 
+      }))
+      // ADD THIS FILTER LINE:
+      .filter(entry => entry.score > 0) 
+      // Sort the remaining items by score
+      .sort((a, b) => (b.score - a.score) || (a.index - b.index))
+      .map(entry => entry.item);
+  }
+  // --- END OF UPDATE ---
 
     return filtered;
   }
