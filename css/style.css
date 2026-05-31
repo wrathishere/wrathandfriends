@@ -3,7 +3,7 @@
    Warm ivory + amber — modern game marketplace, light theme
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Cinzel:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&family=Caesar+Dressing&display=swap');
 
 :root {
   /* Surfaces */
@@ -41,8 +41,8 @@
 
   /* Misc */
   --shadow:          rgba(0, 0, 0, 0.07);
-  --font-display:    'Cinzel', Georgia, serif;
-  --font-body:       'Outfit', sans-serif;
+  --font-display:    'Caesar Dressing', Georgia, serif;
+  --font-body:       'Averia Serif Libre', Georgia, serif;
   --radius:          8px;
   --radius-lg:       12px;
   --transition:      0.18s ease;
@@ -59,6 +59,10 @@ body {
   font-size: 16px;
   line-height: 1.6;
   min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -332,7 +336,7 @@ body {
 }
 
 .card-name {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 0.92rem;
   font-weight: 700;
   color: #ffffff;
@@ -375,27 +379,27 @@ body {
   z-index: 3;
 }
 
-.item-card.on-sale .card-badge {
-  top: 2.35rem;
-}
-
-/* ── Sale Ribbon ──────────────────────────────────────────── */
+/* ── Sale Badge ───────────────────────────────────────────── */
 .sale-ribbon {
   position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  display: block;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 3.15rem;
+  height: 2.55rem;
   text-align: center;
-  background: linear-gradient(90deg, var(--red), #e56d43, var(--red));
+  background: linear-gradient(145deg, #d83a2f 0%, var(--red) 58%, #8f241d 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
   color: #fff;
+  font-family: var(--font-display);
   font-size: 0.66rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1;
   text-transform: uppercase;
-  padding: 0.32rem 0.75rem;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  box-shadow: 0 5px 14px rgba(212, 69, 53, 0.28);
+  padding: 0 0.25rem 0.28rem;
+  filter: drop-shadow(0 4px 8px rgba(65, 39, 27, 0.28));
   z-index: 4;
 }
 
@@ -647,7 +651,7 @@ body {
 }
 
 .sidebar-title {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1126,7 +1130,7 @@ body {
 }
 
 .report-col h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
