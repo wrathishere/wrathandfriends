@@ -17,6 +17,7 @@
   --card-dark-bg:    #41271b;
   --price-orange:    #de8946;
   --sale-yellow:     #ffff00;
+  --price-icon:       url("../images/coins.png");
 
   /* Borders */
   --border:          rgba(0, 0, 0, 0.08);
@@ -364,29 +365,38 @@ body {
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(212, 160, 53, 0.35);
+  color: #fff7e8;
+  background: linear-gradient(135deg, rgba(222, 137, 70, 0.9), rgba(176, 120, 32, 0.92));
+  border: 1px solid rgba(255, 232, 194, 0.42);
   border-radius: var(--radius);
   padding: 0.18rem 0.48rem;
+  box-shadow: 0 3px 10px rgba(65, 39, 27, 0.22);
   backdrop-filter: blur(6px);
   z-index: 3;
+}
+
+.item-card.on-sale .card-badge {
+  top: 2.35rem;
 }
 
 /* ── Sale Ribbon ──────────────────────────────────────────── */
 .sale-ribbon {
   position: absolute;
-  top: 0.55rem;
-  left: 0.55rem;
-  background: var(--red);
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  display: block;
+  text-align: center;
+  background: linear-gradient(90deg, var(--red), #e56d43, var(--red));
   color: #fff;
-  font-size: 0.52rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 0.18rem 0.5rem;
-  border-radius: var(--radius);
-  z-index: 3;
+  padding: 0.32rem 0.75rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 5px 14px rgba(212, 69, 53, 0.28);
+  z-index: 4;
 }
 
 .sale-badge {
@@ -445,6 +455,26 @@ body {
 }
 
 .price-divider { display: none; }
+
+.card-price,
+.modal-price,
+.price-original,
+.price-sale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.card-price::before,
+.modal-price::before,
+.price-original::before,
+.price-sale::before {
+  content: "";
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  background: var(--price-icon) center / contain no-repeat;
+}
 
 .card-price {
   font-family: var(--font-body);
@@ -534,30 +564,43 @@ body {
 .bulk-slider {
   width: 100%;
   cursor: pointer;
-  accent-color: var(--sale-yellow);
+  accent-color: var(--price-orange);
   height: 0.38rem;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(222, 137, 70, 0.38);
   appearance: none;
+}
+
+.bulk-slider::-webkit-slider-runnable-track {
+  height: 0.38rem;
+  border-radius: 999px;
+  background: rgba(222, 137, 70, 0.38);
 }
 
 .bulk-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 0.9rem;
-  height: 0.9rem;
+  margin-top: -0.2rem;
+  width: 0.78rem;
+  height: 0.78rem;
   border-radius: 50%;
-  background: var(--sale-yellow);
-  box-shadow: 0 0 6px rgba(255, 255, 0, 0.5);
+  background: var(--price-orange);
+  box-shadow: 0 0 6px rgba(222, 137, 70, 0.55);
   cursor: pointer;
 }
 
 .bulk-slider::-moz-range-thumb {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.78rem;
+  height: 0.78rem;
   border: none;
   border-radius: 50%;
-  background: var(--sale-yellow);
+  background: var(--price-orange);
   cursor: pointer;
+}
+
+.bulk-slider::-moz-range-track {
+  height: 0.38rem;
+  border-radius: 999px;
+  background: rgba(222, 137, 70, 0.38);
 }
 
 .bulk-summary {
@@ -815,12 +858,13 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid var(--border-gold);
+  color: #fff7e8;
+  border: 1px solid rgba(255, 232, 194, 0.42);
   border-radius: var(--radius);
   padding: 0.15rem 0.55rem;
   width: fit-content;
-  background: var(--gold-glow);
+  background: linear-gradient(135deg, rgba(222, 137, 70, 0.9), rgba(176, 120, 32, 0.92));
+  box-shadow: 0 3px 10px rgba(65, 39, 27, 0.16);
 }
 
 .modal-title {
