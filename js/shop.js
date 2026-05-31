@@ -120,10 +120,6 @@
     return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
   }
 
-  function compactRecommendationTerm(value) {
-    return normalizeRecommendationTerm(value).replace(/[^a-z0-9]/g, "");
-  }
-
   function getRecommendationTermsWithBossInheritance() {
     const expanded = new Set();
     recommendationTerms.forEach(term => {
@@ -163,12 +159,11 @@
       return matchCategory && matchSearch && matchesTagFilters(item);
     });
 
-    // Smart Sort should show only relevant recommendations, ranked strongest first.
+    // Smart Sort should prioritize recommendations without hiding otherwise valid shop items.
     if (recommendationTerms.size > 0) {
       const expandedTerms = getRecommendationTermsWithBossInheritance();
       return filtered
         .map((item, index) => ({ item, index, score: getRecommendationScore(item, expandedTerms) }))
-        .filter(entry => entry.score > 0)
         .sort((a, b) => (b.score - a.score) || (a.index - b.index))
         .map(entry => entry.item);
     }
@@ -194,25 +189,18 @@
   function getRecommendationScore(item, expandedTerms = getRecommendationTermsWithBossInheritance()) {
     if (!recommendationTerms.size || !expandedTerms.size) return 0;
 
-    const name = normalizeRecommendationTerm(item.name);
-    const compactName = compactRecommendationTerm(item.name);
-    const tags = (Array.isArray(item.tags) ? item.tags : []).map(normalizeRecommendationTerm);
-    const compactTags = (Array.isArray(item.tags) ? item.tags : []).map(compactRecommendationTerm);
+    const name = String(item.name || "").toLowerCase();
+    const tags = (Array.isArray(item.tags) ? item.tags : []).map(tag => String(tag).toLowerCase());
+    const category = String(item.category || "").toLowerCase();
+    const description = String(item.description || "").toLowerCase();
 
     let score = 0;
     expandedTerms.forEach(term => {
-      const compactTerm = compactRecommendationTerm(term);
-      if (!term || !compactTerm) return;
-
-      if (name === term || compactName === compactTerm) score += 10;
-      else if (name.includes(term) || compactName.includes(compactTerm)) score += 6;
-
-      tags.forEach((tag, index) => {
-        const compactTag = compactTags[index];
-        if (!tag || !compactTag) return;
-        if (tag === term || compactTag === compactTerm) score += 5;
-        else if (tag.includes(term) || compactTag.includes(compactTerm)) score += 3;
-      });
+      if (!term) return;
+      if (name.includes(term)) score += 3;
+      if (tags.some(tag => tag.includes(term))) score += 2;
+      if (category && (category.includes(term) || term.includes(category))) score += 2;
+      if (description.includes(term)) score += 1;
     });
 
     return score;
