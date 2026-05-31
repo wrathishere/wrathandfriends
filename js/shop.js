@@ -80,9 +80,9 @@
         <div class="${panelClass}">
           <span class="price-label">Price</span>
           <div class="price-wrap">
-            <span class="price-original">🪙 ${item.price.toLocaleString()}</span>
+            <span class="price-original">${item.price.toLocaleString()}</span>
             <span class="price-divider" aria-hidden="true">↓</span>
-            <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>🪙 ${Number(salePrice).toLocaleString()}</span>
+            <span class="price-sale${large ? " price-sale-lg" : ""}" ${item.ifBulk ? `data-bulk-price data-sale-price-unit="${Number(salePrice)}"` : ""}>${Number(salePrice).toLocaleString()}</span>
           </div>
         </div>`;
     }
@@ -90,7 +90,7 @@
     return `
       <div class="${panelClass}">
         <span class="price-label">Price</span>
-        <span class="${large ? "modal-price" : "card-price"}" ${item.ifBulk ? 'data-bulk-price' : ''}>🪙 ${item.price.toLocaleString()}</span>
+        <span class="${large ? "modal-price" : "card-price"}" ${item.ifBulk ? 'data-bulk-price' : ''}>${item.price.toLocaleString()}</span>
       </div>`;
   }
 
@@ -506,7 +506,7 @@
         const total    = Math.round(basePrice * q * (1 - discount / 100));
         qtyEl.textContent  = String(q);
         discEl.textContent = discount > 0 ? `${discount}% off` : "";
-        if (priceEl) priceEl.textContent = `🪙 ${total.toLocaleString()}`;
+        if (priceEl) priceEl.textContent = total.toLocaleString();
       };
 
       slider.addEventListener("input", updateBulkDisplay);
