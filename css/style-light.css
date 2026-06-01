@@ -312,10 +312,14 @@ body {
 }
 
 .card-desc {
+  margin: 0.05rem 0 0;
   font-size: 0.83rem;
   color: var(--text-muted);
-  line-height: 1.55;
-  flex: 1;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-footer {
