@@ -370,6 +370,7 @@
           <div class="card-footer">
             ${base.priceMarkup}
           </div>
+          ${base.descriptionHTML}
           ${categoryExtension}
           ${base.tagsHTML}
         </div>
@@ -394,11 +395,15 @@
       ? `<div class="card-img-wrap">${badge}<div class="card-img-aura" aria-hidden="true"></div><img src="${item.image}" alt="${escHtml(item.name)}" class="card-img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-emoji\'>${item.emoji}</div>'"/>${weaponBtn}${bulkSlider}</div>`
       : `<div class="card-img-wrap">${badge}<div class="card-img-aura" aria-hidden="true"></div><div class="card-emoji">${item.emoji}</div>${weaponBtn}${bulkSlider}</div>`;
 
+    const descriptionHTML = item.description
+      ? `<p class="card-desc">${escHtml(item.description)}</p>`
+      : "";
+
     const tagsHTML = item.tags.length
       ? `<div class="card-tags">${item.tags.map(tag => `<span class="card-tag">${escHtml(tag)}</span>`).join("")}</div>`
       : "";
 
-    return { media, tagsHTML, priceMarkup: priceHTML(item) };
+    return { media, descriptionHTML, tagsHTML, priceMarkup: priceHTML(item) };
   }
 
   function buildCategoryCardExtension(item) {
