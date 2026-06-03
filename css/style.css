@@ -225,6 +225,7 @@ h1, h2, h3, h4, h5, h6 {
   display: grid;
   grid-template-columns: 220px 1fr;
   gap: 1.25rem;
+  align-items: start;
 }
 
 .shop-layout .shop-grid {
@@ -241,6 +242,8 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 1320px;
   margin: 1.25rem auto 3rem;
   padding: 0 2rem;
+  align-items: start;
+  align-content: start;
 }
 
 .shop-layout .shop-grid {
@@ -257,6 +260,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   min-height: 340px;
+  align-self: start;
   overflow: hidden;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
