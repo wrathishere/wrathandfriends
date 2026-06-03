@@ -14,6 +14,9 @@
   // Tag filter state: Map<groupName, Set<lowerTag>>
   const activeTagFilters = new Map();
   const expandedTagGroups = new Set();
+  let tokenTagSearchQuery = "";
+  let tokenTagListExpanded = false;
+  const INITIAL_TOKEN_TAG_LIMIT = 10;
 
   // Smart sort state
   let recommendationTerms = new Set();
@@ -269,26 +272,7 @@
         <button class="sidebar-clear" id="clear-tag-filters" type="button">Clear</button>
       </div>`;
 
-    const groupsHtml = tagGroups.map(group => {
-      const isOpen = expandedTagGroups.has(group.name) || expandedTagGroups.size === 0;
-
-      const tagsHtml = group.tags.map(tag => {
-        const checked = activeTagFilters.get(group.name)?.has(tag.toLowerCase()) ? "checked" : "";
-        return `
-          <label class="tag-option">
-            <input type="checkbox" data-group="${escHtml(group.name)}" data-tag="${escHtml(tag)}" ${checked} />
-            <span>${escHtml(tag)}</span>
-          </label>`;
-      }).join("");
-
-      return `
-        <section class="tag-group ${isOpen ? "open" : ""}">
-          <button class="tag-group-btn" data-group-btn="${escHtml(group.name)}" type="button">
-            ${escHtml(group.name)}
-          </button>
-          <div class="tag-group-options">${tagsHtml}</div>
-        </section>`;
-    }).join("");
+    const groupsHtml = tagGroups.map(group => buildTagGroupHtml(group)).join("");
 
     tagSidebar.innerHTML = sidebarHeader + groupsHtml;
 
@@ -325,6 +309,99 @@
         renderGrid();
       });
     });
+
+    const tokenSearchInput = document.getElementById("token-tag-search");
+    tokenSearchInput?.addEventListener("input", event => {
+      const caretPosition = event.target.selectionStart || 0;
+      tokenTagSearchQuery = event.target.value.trim().toLowerCase();
+      tokenTagListExpanded = false;
+      buildTagSidebar();
+
+      const refreshedInput = document.getElementById("token-tag-search");
+      refreshedInput?.focus();
+      refreshedInput?.setSelectionRange(caretPosition, caretPosition);
+    });
+
+    const tokenShowMoreBtn = document.getElementById("token-tag-show-more");
+    tokenShowMoreBtn?.addEventListener("click", () => {
+      tokenTagListExpanded = true;
+      buildTagSidebar();
+    });
+  }
+
+  function buildTagGroupHtml(group) {
+    const isTokenGroup = group.name.toLowerCase() === "token";
+    const isOpen = expandedTagGroups.has(group.name) || expandedTagGroups.size === 0;
+    const groupLabel = isTokenGroup ? `${group.name} (${group.tags.length})` : group.name;
+    const visibleTags = getVisibleTagsForGroup(group, isTokenGroup);
+    const selectedTags = activeTagFilters.get(group.name) || new Set();
+
+    const tagsHtml = visibleTags.map(tag => {
+      const checked = selectedTags.has(String(tag).toLowerCase()) ? "checked" : "";
+      return `
+        <label class="tag-option">
+          <input type="checkbox" data-group="${escHtml(group.name)}" data-tag="${escHtml(tag)}" ${checked} />
+          <span>${escHtml(tag)}</span>
+        </label>`;
+    }).join("");
+
+    const tokenControls = isTokenGroup ? buildTokenTagControls(group, visibleTags.length) : "";
+    const emptyMessage = isTokenGroup && !visibleTags.length
+      ? `<p class="tag-empty-message">No token tags match your search.</p>`
+      : "";
+
+    return `
+      <section class="tag-group ${isOpen ? "open" : ""} ${isTokenGroup ? "tag-group-token" : ""}">
+        <button class="tag-group-btn" data-group-btn="${escHtml(group.name)}" type="button">
+          <span class="tag-group-label">${escHtml(groupLabel)}</span>
+        </button>
+        <div class="tag-group-options">
+          ${tokenControls}
+          <div class="tag-options-list">${tagsHtml}${emptyMessage}</div>
+        </div>
+      </section>`;
+  }
+
+  function getVisibleTagsForGroup(group, isTokenGroup) {
+    if (!isTokenGroup) return group.tags;
+
+    const query = tokenTagSearchQuery;
+    const matchingTags = query
+      ? group.tags.filter(tag => String(tag).toLowerCase().includes(query))
+      : group.tags;
+
+    if (tokenTagListExpanded || matchingTags.length <= INITIAL_TOKEN_TAG_LIMIT) return matchingTags;
+
+    const selectedTags = activeTagFilters.get(group.name) || new Set();
+    const initialTags = matchingTags.slice(0, INITIAL_TOKEN_TAG_LIMIT);
+    const hiddenSelectedTags = matchingTags.slice(INITIAL_TOKEN_TAG_LIMIT)
+      .filter(tag => selectedTags.has(String(tag).toLowerCase()));
+
+    return [...initialTags, ...hiddenSelectedTags];
+  }
+
+  function buildTokenTagControls(group, visibleCount) {
+    const query = tokenTagSearchQuery;
+    const matchingCount = query
+      ? group.tags.filter(tag => String(tag).toLowerCase().includes(query)).length
+      : group.tags.length;
+    const hasHiddenMatches = visibleCount < matchingCount;
+
+    return `
+      <div class="token-filter-tools">
+        <input
+          id="token-tag-search"
+          class="token-filter-search"
+          type="search"
+          value="${escHtml(tokenTagSearchQuery)}"
+          placeholder="Search Token..."
+          aria-label="Search token tags"
+        />
+        ${hasHiddenMatches ? `
+          <button id="token-tag-show-more" class="token-show-more" type="button">
+            Show More...
+          </button>` : ""}
+      </div>`;
   }
 
   function collectTagGroupsFromItems() {
