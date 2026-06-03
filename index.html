@@ -7,51 +7,52 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=20260601-card-descriptions" />
+  <link rel="stylesheet" href="css/style.css?v=20260603-header-layout" />
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="header-inner">
-      <div class="shop-brand">
-        <img src="images/logo.png" alt="Wrath and Friends" class="brand-icon" onerror="this.style.display='none'" />
-        <div>
-          <h1 class="shop-title">Wrath &amp; Friends</h1>
-          <p class="shop-tagline" id="shop-tagline">For Friends by the friends</p>
+      <div class="header-top-row">
+        <h1 class="shop-title">Wrath &amp; Friends</h1>
+
+        <!-- Spreadsheet-driven shop menu links -->
+        <nav class="shop-menu-links" id="shop-menu-links" aria-label="Shop menu links"></nav>
+      </div>
+
+      <div class="header-hero-row">
+        <p class="shop-tagline" id="shop-tagline">For Friends by the friends</p>
+      </div>
+
+      <nav class="filter-bar" role="navigation" aria-label="Shop filters">
+        <div class="filter-inner">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="Search items…"
+              aria-label="Search items"
+            />
+          </div>
+
+          <div class="category-pills" role="group" aria-label="Filter by category">
+            <button class="pill active" data-category="all">All Items</button>
+          </div>
+
+          <div class="player-report-controls">
+            <select id="player-select" class="player-select" aria-label="Select player">
+              <option value="">Select player...</option>
+            </select>
+            <button id="player-report-btn" class="player-report-btn">Open Report</button>
+            <button id="clear-smart-sort-btn" class="player-report-btn hidden" type="button">Clear Smart Sort</button>
+          </div>
         </div>
-      </div>
-      <div class="player-report-controls">
-        <select id="player-select" class="player-select" aria-label="Select player">
-          <option value="">Select player...</option>
-        </select>
-        <button id="player-report-btn" class="player-report-btn">Open Report</button>
-        <button id="clear-smart-sort-btn" class="player-report-btn hidden" type="button">Clear Smart Sort</button>
-      </div>
+      </nav>
     </div>
   </header>
-
-  <!-- Search & Filter Bar -->
-  <nav class="filter-bar" role="navigation" aria-label="Shop filters">
-    <div class="filter-inner">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          id="search-input"
-          class="search-input"
-          placeholder="Search items…"
-          aria-label="Search items"
-        />
-      </div>
-      <div class="category-pills" role="group" aria-label="Filter by category">
-        <button class="pill active" data-category="all">All Items</button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Spreadsheet-driven shop menu links -->
-  <div class="shop-menu-links" id="shop-menu-links" aria-label="Shop menu links"></div>
 
   <!-- Results count -->
   <div class="results-info" aria-live="polite">
