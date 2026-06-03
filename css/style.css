@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 1320px;
   margin: 0 auto;
   display: grid;
-  gap: 1.1rem;
+  gap: 1.4rem;
 }
 
 .header-top-row {
@@ -99,18 +99,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header-hero-row {
+  padding-top: 0.9rem;
   text-align: center;
 }
 
 .shop-tagline {
-  max-width: 980px;
+  max-width: 860px;
   margin: 0 auto;
   color: var(--text-main);
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 3.2rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.08;
+  font-size: clamp(1.35rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.28;
 }
 
 /* ── Shop menu links ──────────────────────────────────────── */
@@ -765,6 +766,60 @@ h1, h2, h3, h4, h5, h6 {
 
 .tag-group.open .tag-group-options { display: block; }
 
+.tag-group-label {
+  min-width: 0;
+}
+
+.token-filter-tools {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.15rem 0 0.5rem;
+}
+
+.token-filter-search {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  padding: 0.38rem 0.55rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.token-filter-search::placeholder { color: var(--text-dim); }
+
+.token-filter-search:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(212, 160, 53, 0.1);
+}
+
+.token-show-more {
+  justify-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0;
+  transition: color var(--transition);
+}
+
+.token-show-more:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.tag-empty-message {
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  padding: 0.2rem 0 0.35rem;
+}
+
 .tag-option {
   display: flex;
   align-items: center;
@@ -1245,8 +1300,10 @@ h1, h2, h3, h4, h5, h6 {
     text-align: left;
   }
 
+  .header-hero-row { padding-top: 0.45rem; }
+
   .shop-tagline {
-    font-size: clamp(1.45rem, 9vw, 2.35rem);
+    font-size: clamp(1.18rem, 6vw, 1.7rem);
   }
 
   .filter-inner {
